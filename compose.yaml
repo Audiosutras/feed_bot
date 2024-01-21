@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    environment:
+      - AFFILIATE_BOT_TOKEN=${AFFILIATE_BOT_TOKEN}
+    command: 'poetry run bot'
