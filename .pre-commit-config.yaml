@@ -15,4 +15,3 @@ repos:
     -   id: poetry-check
     -   id: poetry-lock
     -   id: poetry-install
-    -   id: poetry-export
