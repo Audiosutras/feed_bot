@@ -17,10 +17,8 @@ pip install "poetry==$POETRY_VERSION"
 WORKDIR /code
 COPY poetry.lock pyproject.toml /code/
 
-
 # No need to create a virtualenv for this isolated environment:
-RUN poetry config virtualenvs.create false && \
-poetry install --no-interaction --only=main
+RUN poetry config virtualenvs.create false
 
 # Creating folders, and files for a project:
 COPY . /code

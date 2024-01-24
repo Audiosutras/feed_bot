@@ -3,7 +3,7 @@ version: '3.8'
 services:
   bot:
     build: .
-    command: poetry run bot
+    command: sh -c "poetry install --no-interaction --only=main && poetry run bot"
     restart: unless-stopped
     environment:
       - AFFILIATE_BOT_TOKEN=${AFFILIATE_BOT_TOKEN}
