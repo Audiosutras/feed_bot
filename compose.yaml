@@ -5,5 +5,5 @@ services:
     build: .
     command: sh -c "poetry install --no-interaction --only=main && poetry run bot"
     restart: unless-stopped
-    environment:
-      - AFFILIATE_BOT_TOKEN=${AFFILIATE_BOT_TOKEN}
+    env_file:
+      - .env
