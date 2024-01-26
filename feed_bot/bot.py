@@ -17,14 +17,15 @@ class FeedClient(discord.Client):
         print(f"Logged in as {self.user} (ID: {self.user.id})")
         print("------")
 
-    @tasks.loop(hours=24)
+    @tasks.loop(seconds=60)
     async def post_affiliate_marketing_reddit(self):
         """Returns New Posts In Affiliate Reddit"""
         channel = self.get_channel(1198396321409802372)
         affiliate_marketing = Reddit("Affiliatemarketing")
         embeds = affiliate_marketing.get_embedded_posts()
-        for embed in embeds:
-            await channel.send(embed=embed)
+        if embeds:
+            for embed in embeds:
+                await channel.send(embed=embed)
 
     @post_affiliate_marketing_reddit.before_loop
     async def before_my_task(self):
@@ -37,7 +38,7 @@ def main():
     intents.message_content = True
 
     # initialize Bot
-    bot = RedditClient(command_prefix="$", intents=intents)
+    bot = FeedClient(command_prefix="$", intents=intents)
 
     token = os.getenv("BOT_TOKEN")
     bot.run(token)
