@@ -22,7 +22,7 @@ class FeedClient(discord.Client):
         """Returns New Posts In Affiliate Reddit"""
         channel = self.get_channel(1198396321409802372)
         affiliate_marketing = Reddit("Affiliatemarketing")
-        embeds = affiliate_marketing.get_embedded_posts()
+        embeds = await affiliate_marketing.get_embedded_posts(channel)
         if embeds:
             for embed in embeds:
                 await channel.send(embed=embed)
