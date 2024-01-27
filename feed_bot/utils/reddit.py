@@ -23,17 +23,15 @@ class Reddit:
 
     async def get_embedded_posts(self, channel: discord.abc.GuildChannel , *args, **kwargs):
         """Posts only new embeds that we have not previously shared in channel.
-
-        Args:
-            channel (_type_): discord.abc.GuildChannel
-
-        Returns:
-            _type_: _description_
         """
-        prior_embed_check = [
-            message.embeds[0].title
-            async for message in channel.history(limit=100)
-        ]
+        prior_embed_check = []
+        async for message in channel.history(limit=100):
+            title = ''
+            embeds = getattr(message, "embeds", [])
+            if embeds:
+                title = getattr(embeds[0], "title")
+            prior_embed_check.append(title)
+
         response = self.get()
         embeds = []
         children = response["data"]["children"]
