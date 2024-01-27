@@ -25,7 +25,7 @@ class FeedBot(commands.Bot):
 
     @tasks.loop(seconds=60)
     async def post_subreddit(self, *args, **kwargs):
-        """Returns New Posts for a subreddit"""
+        """Returns new posts for a subreddit"""
         cmd_ctx = kwargs.get("cmd_ctx")
         channel = cmd_ctx.message.channel
         subreddit = kwargs.get("subreddit")
