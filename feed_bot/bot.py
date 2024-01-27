@@ -27,9 +27,8 @@ class FeedBot(commands.Bot):
     async def post_subreddit(self, *args, **kwargs):
         """Returns New Posts for a subreddit"""
         cmd_ctx = kwargs.get("cmd_ctx")
-        channel_id = cmd_ctx.message.channel.id
+        channel = cmd_ctx.message.channel
         subreddit = kwargs.get("subreddit")
-        channel = self.get_channel(channel_id)
         affiliate_marketing = Reddit(subreddit)
         embeds = await affiliate_marketing.get_embedded_posts(channel)
         if embeds:
