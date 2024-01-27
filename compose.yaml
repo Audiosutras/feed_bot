@@ -4,6 +4,6 @@ services:
   bot:
     build: .
     command: sh -c "poetry install --no-interaction --only=main && poetry run bot"
-    restart: unless-stopped
+    restart: always
     env_file:
       - .env
