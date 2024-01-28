@@ -57,15 +57,20 @@ class RedditRSS(commands.Cog):
 
     @subreddit.command(name="start")
     async def start(self, ctx, arg, *args, **kwargs):
-        """Adds and starts subreddit rss feeds for this channel. Ex: '.subreddit start <subreddit_name>'"""
+        """Adds and starts subreddit rss feeds for this channel."""
         kwargs["cmd_ctx"] = ctx
         kwargs["subreddit"] = arg
         self.bot.post_subreddit.start(*args, **kwargs)
         await ctx.send(f"**Starting For r/{arg}...**")
 
+    @start.error
+    async def handle_start_cmd_error(self, ctx, error):
+        await ctx.send(f"**{error}**")
+        await ctx.send(f"**CMD: .subreddit start <subreddit_name>**")
+
     @subreddit.command(name="stop")
     async def stop(self, ctx):
-        """Stops and removes subreddit rss feeds from this channel. Ex: '.subreddit stop'"""
+        """Stops and removes subreddit rss feeds from this channel."""
         self.bot.post_subreddit.stop()
         await ctx.send("stopping...")
 
