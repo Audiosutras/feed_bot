@@ -40,7 +40,7 @@ class FeedBot(commands.Bot):
         await self.wait_until_ready()  # wait until the bot logs in
 
 class RedditRSS(commands.Cog):
-    """Interact with Reddit
+    """Interact with Reddit Listings
     """
     def __init__(self, bot):
         self.bot = bot

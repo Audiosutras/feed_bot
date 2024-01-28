@@ -7,6 +7,22 @@ Add `BOT_TOKEN` environment variable. You can get this token [here](https://disc
 
 Make sure to enable the `Message Content` intent for the bot whose token you are using.
 
+### Development
+
+1. Within a Docker Container
+Make sure that you have Docker installed. After cloning the repository run:
+```bash
+$ sudo docker compose watch
+```
+
+This project features hot-reloading of the container (syncing/restarting) when changes are made to the `feed_bot` directory and packages are added to `pyproject.toml`.
+
+To view logs in a different terminal instance run
+```bash
+$ sudo docker compose logs --follow bot
+```
+
+
 ### Deployment
 
 This project utilizes [Github Actions](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#publishing-a-package-using-an-action) for deploying a production ready docker container to the github container registry. For more information see [working with the container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).

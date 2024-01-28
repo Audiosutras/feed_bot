@@ -2,7 +2,16 @@ version: '3.8'
 
 services:
   bot:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./feed_bot
+          target: /code/feed_bot
+        - action: rebuild
+          path: pyproject.toml
     command: sh -c "poetry install --no-interaction --only=main && poetry run bot"
     restart: always
     env_file:
