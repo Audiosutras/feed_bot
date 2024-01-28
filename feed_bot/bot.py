@@ -10,12 +10,13 @@ load_dotenv()
 
 
 class FeedBot(commands.Bot):
-
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
-        super().__init__(command_prefix=commands.when_mentioned_or('.'), intents=intents)
-    
+        super().__init__(
+            command_prefix=commands.when_mentioned_or("."), intents=intents
+        )
+
     async def setup_hook(self):
         await self.add_cog(RedditRSS(self))
 
@@ -39,25 +40,24 @@ class FeedBot(commands.Bot):
     async def before_my_task(self):
         await self.wait_until_ready()  # wait until the bot logs in
 
+
 class RedditRSS(commands.Cog):
-    """Interact with Reddit Listings
-    """
+    """Interact with Reddit Listings"""
+
     def __init__(self, bot):
         self.bot = bot
-    
-    @commands.group(name='subreddit')
+
+    @commands.group(name="subreddit")
     async def subreddit(self, ctx):
-        """Group command for managing channel subreddit rss feeds
-        """
+        """Group command for managing channel subreddit rss feeds"""
         if ctx.invoked_subcommand is None:
             await ctx.send(
-                '**Invalid subreddit command passed. Type: .help subreddit**'
+                "**Invalid subreddit command passed. Type: .help subreddit**"
             )
 
     @subreddit.command(name="start")
     async def start(self, ctx, arg, *args, **kwargs):
-        """Adds and starts subreddit rss feeds for this channel. Ex: '.subreddit start <subreddit_name>'
-        """
+        """Adds and starts subreddit rss feeds for this channel. Ex: '.subreddit start <subreddit_name>'"""
         kwargs["cmd_ctx"] = ctx
         kwargs["subreddit"] = arg
         self.bot.post_subreddit.start(*args, **kwargs)
@@ -65,14 +65,12 @@ class RedditRSS(commands.Cog):
 
     @subreddit.command(name="stop")
     async def stop(self, ctx):
-        """Stops and removes subreddit rss feeds from this channel. Ex: '.subreddit stop'
-        """
+        """Stops and removes subreddit rss feeds from this channel. Ex: '.subreddit stop'"""
         self.bot.post_subreddit.stop()
         await ctx.send("stopping...")
-        
+
 
 def main():
     bot = FeedBot()
     token = os.getenv("BOT_TOKEN")
     bot.run(token)
-
