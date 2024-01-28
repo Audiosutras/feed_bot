@@ -68,6 +68,11 @@ Make sure to enable the `Message Content` intent for the bot whose token you are
     $ poetry shell
     ```
 
+For both setups this project uses `pre-commit`. Make sure to run after cloning the repo:
+```bash
+$ pre-commit install
+```
+
 ### Deployment
 
 This project utilizes [Github Actions](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#publishing-a-package-using-an-action) for deploying a production ready docker container to the github container registry. For more information see [working with the container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
