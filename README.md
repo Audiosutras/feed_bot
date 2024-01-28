@@ -72,7 +72,13 @@ Make sure to enable the `Message Content` intent for the bot whose token you are
 
 This project utilizes [Github Actions](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#publishing-a-package-using-an-action) for deploying a production ready docker container to the github container registry. For more information see [working with the container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 
-To push a new container image to github packages create a `release` from the `main` branch with specified git tag labelled with a version number such as [1.2.3](https://github.com/docker/metadata-action?tab=readme-ov-file#tags-input).
+To push a new container image to github packages create a `release` from the `main` branch with a specified [git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging). The git tag should be labelled with a version number such as [1.2.3](https://github.com/docker/metadata-action?tab=readme-ov-file#tags-input).
+
+```bash
+(main branch) $ git tag 1.2.3
+(main branch) $ git tag push 1.2.3
+(main branch) $ gh release create
+```
 
 ### Production
 
