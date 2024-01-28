@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    image: ghcr.io/audiosutras/feed_bot:release
+    command: sh -c "poetry install --no-interaction --only=main && poetry run bot"
+    restart: always
+    env_file:
+      - .env
