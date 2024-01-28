@@ -14,7 +14,7 @@ class FeedBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
-        super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
+        super().__init__(command_prefix=commands.when_mentioned_or('.'), intents=intents)
     
     async def setup_hook(self):
         await self.add_cog(RedditRSS(self))
@@ -45,20 +45,28 @@ class RedditRSS(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    @commands.command(name="add_subreddit")
-    async def add_subreddit(self, ctx, arg, *args, **kwargs):
-        """Get updates when a new posts has been added to a subreddit
-        
-        Add subreddit feed: $add_subreddit <subreddit_name>
+    @commands.group(name='subreddit')
+    async def subreddit(self, ctx):
+        """Group command for managing channel subreddit rss feeds
+        """
+        if ctx.invoked_subcommand is None:
+            await ctx.send(
+                '**Invalid subreddit command passed. Type: .help subreddit**'
+            )
+
+    @subreddit.command(name="start")
+    async def start(self, ctx, arg, *args, **kwargs):
+        """Adds and starts subreddit rss feeds for this channel. Ex: '.subreddit start <subreddit_name>'
         """
         kwargs["cmd_ctx"] = ctx
         kwargs["subreddit"] = arg
         self.bot.post_subreddit.start(*args, **kwargs)
         await ctx.send(f"**Starting For r/{arg}...**")
 
-    @commands.command(name="rm_subreddit")
-    async def rm_subreddit(self, ctx):
-        """Removes subreddit rss feed"""
+    @subreddit.command(name="stop")
+    async def stop(self, ctx):
+        """Stops and removes subreddit rss feeds from this channel. Ex: '.subreddit stop'
+        """
         self.bot.post_subreddit.stop()
         await ctx.send("stopping...")
         
