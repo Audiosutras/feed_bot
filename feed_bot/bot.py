@@ -17,7 +17,7 @@ class FeedBot(commands.Bot):
         super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
     
     async def setup_hook(self):
-        await self.add_cog(RedditCog(self))
+        await self.add_cog(RedditRSS(self))
 
     async def on_ready(self):
         print(f"Logged in as {self.user} (ID: {self.user.id})")
@@ -39,7 +39,9 @@ class FeedBot(commands.Bot):
     async def before_my_task(self):
         await self.wait_until_ready()  # wait until the bot logs in
 
-class RedditCog(commands.Cog):
+class RedditRSS(commands.Cog):
+    """Interact with Reddit
+    """
     def __init__(self, bot):
         self.bot = bot
     
