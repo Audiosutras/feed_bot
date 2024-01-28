@@ -15,6 +15,8 @@ To push a new container to github packages merge code from `main` into into the 
 
 ### Production
 
+**Make sure** you have added your [Bot token](#environment-variables)
+
 Make sure that you have docker installed. You can either create a file called `compose-prod.yaml` and copy the contents of the `compose-prod.yaml` file that you see in this repository or copy the repository.
 
 Run
