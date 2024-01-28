@@ -18,55 +18,55 @@ Make sure to enable the `Message Content` intent for the bot whose token you are
 ### Development
 
 1. Within a Docker Container
-Make sure that you have Docker installed. After cloning the repository run:
-```bash
-$ sudo docker compose watch
-```
+    Make sure that you have Docker installed. After cloning the repository run:
+    ```bash
+    $ sudo docker compose watch
+    ```
 
-This project features hot-reloading of the container (syncing/restarting) when changes are made to the `feed_bot` directory and packages are added to `pyproject.toml`.
+    This project features hot-reloading of the container (syncing/restarting) when changes are made to the `feed_bot` directory and packages are added to `pyproject.toml`.
 
-To view logs in a different terminal instance run
-```bash
-$ sudo docker compose logs --follow bot
-```
+    To view logs in a different terminal instance run
+    ```bash
+    $ sudo docker compose logs --follow bot
+    ```
 
-To stop the container and remove persisting volumes
-```bash
-$ sudo docker compose down -v
-```
+    To stop the container and remove persisting volumes
+    ```bash
+    $ sudo docker compose down -v
+    ```
 
 2. Local Machine
-Python Version: `3.12`. To install python on MacOS & Debian-based systems
-```bash
-$ sudo apt install software-properties-common
-$ sudo add-apt-repository ppa:deadsnakes/ppa
-$ sudo apt update
-$ sudo apt install python3.12
-```
+    Python Version: `3.12`. To install python on MacOS & Debian-based systems
+    ```bash
+    $ sudo apt install software-properties-common
+    $ sudo add-apt-repository ppa:deadsnakes/ppa
+    $ sudo apt update
+    $ sudo apt install python3.12
+    ```
 
-This python package uses [poetry](https://python-poetry.org/docs/) for dependency management. To install:
-```bash
-# install pipx if you have not already
-$ python3 -m pip install --user pipx
-$ python3 -m pipx ensurepath
-# install poetry
-$ pipx install poetry
-```
+    This python package uses [poetry](https://python-poetry.org/docs/) for dependency management. To install:
+    ```bash
+    # install pipx if you have not already
+    $ python3 -m pip install --user pipx
+    $ python3 -m pipx ensurepath
+    # install poetry
+    $ pipx install poetry
+    ```
 
-Install dependencies:
-```bash
-$ poetry install
-```
+    Install dependencies:
+    ```bash
+    $ poetry install
+    ```
 
-Run the script for the bot:
-```bash
-$ poetry run bot
-```
+    Run the script for the bot:
+    ```bash
+    $ poetry run bot
+    ```
 
-To spawn a virtualenv:
-```bash
-$ poetry shell
-```
+    To spawn a virtualenv:
+    ```bash
+    $ poetry shell
+    ```
 
 ### Deployment
 
