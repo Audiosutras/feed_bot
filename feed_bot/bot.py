@@ -45,11 +45,11 @@ class RedditRSS(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    @commands.command(name="rss_subreddit")
-    async def rss_subreddit(self, ctx, arg, *args, **kwargs):
+    @commands.command(name="add_subreddit")
+    async def add_subreddit(self, ctx, arg, *args, **kwargs):
         """Get updates when a new posts has been added to a subreddit
         
-        Add subreddit feed: $rss_subreddit <subreddit_name>
+        Add subreddit feed: $add_subreddit <subreddit_name>
         """
         kwargs["cmd_ctx"] = ctx
         kwargs["subreddit"] = arg
