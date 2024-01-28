@@ -22,7 +22,13 @@ To view logs in a different terminal instance run
 $ sudo docker compose logs --follow bot
 ```
 
+To stop the container and remove persisting volumes
+```
+$ sudo docker compose down -v
+```
 
+2. Local Machine Development
+*TO DO*
 ### Deployment
 
 This project utilizes [Github Actions](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#publishing-a-package-using-an-action) for deploying a production ready docker container to the github container registry. For more information see [working with the container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
