@@ -1,10 +1,12 @@
-# This example requires the 'message_content' intent.
+"""FeedBot
+"""
 import os
 import discord
 import asyncio
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from .utils.reddit import Reddit
+from .cogs import RedditRSS
 
 load_dotenv()
 
@@ -39,40 +41,6 @@ class FeedBot(commands.Bot):
     @post_subreddit.before_loop
     async def before_my_task(self):
         await self.wait_until_ready()  # wait until the bot logs in
-
-
-class RedditRSS(commands.Cog):
-    """Interact with Reddit Listings"""
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.group(name="subreddit")
-    async def subreddit(self, ctx):
-        """Group command for managing channel subreddit rss feeds"""
-        if ctx.invoked_subcommand is None:
-            await ctx.send(
-                "**Invalid subreddit command passed. Type: .help subreddit**"
-            )
-
-    @subreddit.command(name="start")
-    async def start(self, ctx, arg, *args, **kwargs):
-        """Adds and starts subreddit rss feeds for this channel."""
-        kwargs["cmd_ctx"] = ctx
-        kwargs["subreddit"] = arg
-        self.bot.post_subreddit.start(*args, **kwargs)
-        await ctx.send(f"**Starting For r/{arg}...**")
-
-    @start.error
-    async def handle_start_cmd_error(self, ctx, error):
-        await ctx.send(f"**{error}**")
-        await ctx.send(f"**CMD: .subreddit start <subreddit_name>**")
-
-    @subreddit.command(name="stop")
-    async def stop(self, ctx):
-        """Stops and removes subreddit rss feeds from this channel."""
-        self.bot.post_subreddit.stop()
-        await ctx.send("stopping...")
 
 
 def main():
