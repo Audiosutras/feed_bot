@@ -2,7 +2,9 @@
 
 https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
+import asyncio
 from discord.ext import commands
+from .utils.reddit import Reddit
 
 
 class RedditRSS(commands.Cog):
@@ -11,6 +13,12 @@ class RedditRSS(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def insert_documents(self, documents):
+        result = await self.bot.reddit_collection.insert_many(documents)
+        print(
+            f"inserted {len(result.inserted_ids)} docs into {self.bot.reddit_collection} collection"
+        )
+
     @commands.group(name="subreddit")
     async def subreddit(self, ctx):
         """Group command for managing channel subreddit rss feeds"""
@@ -18,6 +26,16 @@ class RedditRSS(commands.Cog):
             await ctx.send(
                 "**Invalid subreddit command passed. Type: .help subreddit**"
             )
+
+    @subreddit.command(name="add")
+    async def add(self, ctx, arg):
+        """Adds subreddit as an rss feed for this channel."""
+        channel_id = ctx.message.channel.id
+        subreddit = arg
+        r = Reddit(subreddit, channel_id)
+        documents = r.get_channel_subreddit_documents()
+        result = await self.insert_documents(documents)
+        await ctx.send(f"**{result}**")
 
     @subreddit.command(name="start")
     async def start(self, ctx, arg, *args, **kwargs):
