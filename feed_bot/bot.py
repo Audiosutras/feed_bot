@@ -36,16 +36,16 @@ class FeedBot(commands.Bot):
         print("------")
 
     @tasks.loop(seconds=60)
-    async def post_subreddit(self, *args, **kwargs):
+    async def post_subreddit(self, ctx, *args, **kwargs):
         """Returns new posts for a subreddit"""
-        cmd_ctx = kwargs.get("cmd_ctx")
-        channel = cmd_ctx.message.channel
-        subreddit = kwargs.get("subreddit")
-        affiliate_marketing = Reddit(subreddit)
-        embeds = await affiliate_marketing.get_embedded_posts(channel)
-        if embeds:
-            for embed in embeds:
-                await channel.send(embed=embed)
+        cursor = self.reddit_collection.find({"sent": False})
+        unsent_documents = await cursor.to_list(None)
+        if unsent_documents:
+            r = Reddit("", None)
+            channel_embeds = r.documents_to_embeds(documents=unsent_documents)
+            for channel_id, embed in channel_embeds:
+                channel = self.get_channel(channel_id)
+                await channel.send(embed)
 
     @post_subreddit.before_loop
     async def before_my_task(self):

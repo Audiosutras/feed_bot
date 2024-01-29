@@ -1,6 +1,7 @@
 import discord
 import requests
 import requests_random_user_agent
+from typing import Optional
 
 
 class Reddit:
@@ -9,7 +10,7 @@ class Reddit:
     Reddit API: https://www.reddit.com/dev/api/
     """
 
-    def __init__(self, subreddit, channel_id):
+    def __init__(self, subreddit: Optional[str], channel_id: Optional[int]):
         self.subreddit = subreddit
         self.channel_id = channel_id
 
@@ -45,32 +46,16 @@ class Reddit:
                 )
         return formatted_res
 
-    async def get_embedded_posts(
-        self, channel: discord.abc.GuildChannel, *args, **kwargs
-    ):
-        """Posts only new embeds that we have not previously shared in channel."""
-        prior_embed_check = []
-        async for message in channel.history(limit=100):
-            title = ""
-            embeds = getattr(message, "embeds", [])
-            if embeds:
-                title = getattr(embeds[0], "title")
-            prior_embed_check.append(title)
-
-        response = await self.get()
-        embeds = []
-        children = response["data"]["children"]
-        for child_data in children:
-            subreddit = child_data["data"]["subreddit"]
-            title = child_data["data"]["title"][:256]
-            description = child_data["data"]["selftext"][:256]
-            link = child_data["data"]["permalink"]
-            if description and title not in prior_embed_check:
-                embed = discord.Embed(
-                    title=f"{title}",
-                    url=f"https://reddit.com{link}",
-                    description=f"[r/{subreddit}]: {description}",
-                    color=discord.Colour.from_rgb(255, 0, 0),
-                )
-                embeds.append(embed)
-        return embeds
+    @staticmethod
+    def documents_to_embeds(documents, *args, **kwargs):
+        """Static method for converting noSql Documents to Discord Embeds"""
+        channel_embeds = []
+        for doc in documents:
+            embed = discord.Embed(
+                title=f"{doc.title}",
+                url=f"https://reddit.com{doc.link}",
+                description=f"[r/{doc.subreddit}]: {doc.description}",
+                color=discord.Colour.from_rgb(255, 0, 0),
+            )
+            channel_embeds.append((doc.channel_id, embed))
+        return channel_embeds

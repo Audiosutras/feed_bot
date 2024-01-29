@@ -2,7 +2,6 @@
 
 https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
-import asyncio
 from discord.ext import commands
 from .utils.reddit import Reddit
 
@@ -35,23 +34,16 @@ class RedditRSS(commands.Cog):
         r = Reddit(subreddit, channel_id)
         documents = r.get_channel_subreddit_documents()
         result = await self.insert_documents(documents)
-        await ctx.send(f"**{result}**")
+        await ctx.send(f"**Following r/{subreddit}**")
 
     @subreddit.command(name="start")
-    async def start(self, ctx, arg, *args, **kwargs):
-        """Adds and starts subreddit rss feeds for this channel."""
-        kwargs["cmd_ctx"] = ctx
-        kwargs["subreddit"] = arg
-        self.bot.post_subreddit.start(*args, **kwargs)
-        await ctx.send(f"**Starting For r/{arg}...**")
-
-    @start.error
-    async def handle_start_cmd_error(self, ctx, error):
-        await ctx.send(f"**{error}**")
-        await ctx.send(f"**CMD: .subreddit start <subreddit_name>**")
+    async def start(self, ctx):
+        """Stops rss feeds feeds service"""
+        self.bot.post_subreddit.start(ctx)
+        await ctx.send("**Starting reddit rss feed service...**")
 
     @subreddit.command(name="stop")
     async def stop(self, ctx):
-        """Stops and removes subreddit rss feeds from this channel."""
-        self.bot.post_subreddit.stop()
-        await ctx.send("stopping...")
+        """Stops rss feeds feeds service"""
+        self.bot.post_subreddit.stop(ctx)
+        await ctx.send("**Stopping reddit rss feed service...**")
