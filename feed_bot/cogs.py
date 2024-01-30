@@ -12,7 +12,7 @@ class RedditRSS(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def insert_documents(self, dicts):
+    async def update_or_insert_documents(self, dicts):
         results = []
         for d in dicts:
             result = await self.bot.reddit_collection.update_one(
@@ -21,7 +21,6 @@ class RedditRSS(commands.Cog):
                     "subreddit": d.get("subreddit"),
                     "title": d.get("title"),
                     "description": d.get("description"),
-                    # This field should always exist. So only upsert new dictionaries
                     "sent": {"$exists": False},
                 },
                 update={"$set": {**d}},
@@ -45,7 +44,7 @@ class RedditRSS(commands.Cog):
         subreddit = arg
         r = Reddit(subreddit, channel_id)
         dicts = r.get_channel_subreddit_dicts()
-        result = await self.insert_documents(dicts)
+        result = await self.update_or_insert_documents(dicts)
         await ctx.send(f"**Following r/{subreddit}**")
 
     @subreddit.command(name="start")
