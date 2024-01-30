@@ -23,7 +23,7 @@ class Reddit:
         response = requests.get(self.url)
         return response.json()
 
-    def get_channel_subreddit_documents(self):
+    def get_channel_subreddit_dicts(self):
         response = self.get()
         formatted_res = []
         children = response["data"]["children"]
@@ -51,11 +51,17 @@ class Reddit:
         """Static method for converting noSql Documents to Discord Embeds"""
         channel_embeds = []
         for doc in documents:
+            title = doc.get("title")
+            link = doc.get("link")
+            subreddit = doc.get("subreddit")
+            description = doc.get("description")
+            channel_id = doc.get("channel_id")
+            object_id = doc.get("_id")
             embed = discord.Embed(
-                title=f"{doc.title}",
-                url=f"https://reddit.com{doc.link}",
-                description=f"[r/{doc.subreddit}]: {doc.description}",
+                title=f"{title}",
+                url=f"https://reddit.com{link}",
+                description=f"[r/{subreddit}]: {description}",
                 color=discord.Colour.from_rgb(255, 0, 0),
             )
-            channel_embeds.append((doc.channel_id, embed))
+            channel_embeds.append((channel_id, embed, object_id))
         return channel_embeds

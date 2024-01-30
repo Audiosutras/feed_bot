@@ -43,9 +43,12 @@ class FeedBot(commands.Bot):
         if unsent_documents:
             r = Reddit("", None)
             channel_embeds = r.documents_to_embeds(documents=unsent_documents)
-            for channel_id, embed in channel_embeds:
+            for channel_id, embed, doc_id in channel_embeds:
                 channel = self.get_channel(channel_id)
-                await channel.send(embed)
+                await channel.send(embeds=[embed])
+                await self.reddit_collection.update_one(
+                    filter={"_id": doc_id}, update={"$set": {"sent": True}}
+                )
 
     @post_subreddit.before_loop
     async def before_my_task(self):

@@ -12,11 +12,23 @@ class RedditRSS(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def insert_documents(self, documents):
-        result = await self.bot.reddit_collection.insert_many(documents)
-        print(
-            f"inserted {len(result.inserted_ids)} docs into {self.bot.reddit_collection} collection"
-        )
+    async def insert_documents(self, dicts):
+        results = []
+        for d in dicts:
+            result = await self.bot.reddit_collection.update_one(
+                filter={
+                    "channel_id": d.get("channel_id"),
+                    "subreddit": d.get("subreddit"),
+                    "title": d.get("title"),
+                    "description": d.get("description"),
+                    # This field should always exist. So only upsert new dictionaries
+                    "sent": {"$exists": False},
+                },
+                update={"$set": {**d}},
+                upsert=True,
+            )
+            results.append(result)
+        print(results)
 
     @commands.group(name="subreddit")
     async def subreddit(self, ctx):
@@ -32,8 +44,8 @@ class RedditRSS(commands.Cog):
         channel_id = ctx.message.channel.id
         subreddit = arg
         r = Reddit(subreddit, channel_id)
-        documents = r.get_channel_subreddit_documents()
-        result = await self.insert_documents(documents)
+        dicts = r.get_channel_subreddit_dicts()
+        result = await self.insert_documents(dicts)
         await ctx.send(f"**Following r/{subreddit}**")
 
     @subreddit.command(name="start")
@@ -45,5 +57,5 @@ class RedditRSS(commands.Cog):
     @subreddit.command(name="stop")
     async def stop(self, ctx):
         """Stops rss feeds feeds service"""
-        self.bot.post_subreddit.stop(ctx)
+        self.bot.post_subreddit.stop()
         await ctx.send("**Stopping reddit rss feed service...**")
