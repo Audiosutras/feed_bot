@@ -12,22 +12,26 @@ class RedditRSS(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def update_or_insert_documents(self, dicts):
-        results = []
+    async def find_one_or_insert_one_documents(self, dicts: [dict]):
+        """For each dictionary a document is created if a document matching the dictionary is not found.
+
+        Args:
+            dicts (dict]): List of dictionaries
+        """
+        inserted = []
         for d in dicts:
-            result = await self.bot.reddit_collection.update_one(
-                filter={
+            doc = await self.bot.reddit_collection.find_one(
+                {
                     "channel_id": d.get("channel_id"),
                     "subreddit": d.get("subreddit"),
                     "title": d.get("title"),
                     "description": d.get("description"),
-                    "sent": {"$exists": False},
-                },
-                update={"$set": {**d}},
-                upsert=True,
+                }
             )
-            results.append(result)
-        print(results)
+            if not doc:
+                result = await self.bot.reddit_collection.insert_one(d)
+                inserted.append(result.inserted_id)
+        print(f"Of {len(dicts)} new listings {len(inserted)} have been added to db")
 
     @commands.group(name="subreddit")
     async def subreddit(self, ctx):
@@ -44,7 +48,7 @@ class RedditRSS(commands.Cog):
         subreddit = arg
         r = Reddit(subreddit, channel_id)
         dicts = r.get_channel_subreddit_dicts()
-        result = await self.update_or_insert_documents(dicts)
+        result = await self.find_one_or_insert_one_documents(dicts)
         await ctx.send(f"**Following r/{subreddit}**")
 
     @subreddit.command(name="start")
