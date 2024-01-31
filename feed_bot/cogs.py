@@ -15,6 +15,8 @@ class RedditRSS(commands.Cog):
     async def find_one_or_insert_one_documents(self, dicts: [dict]):
         """For each dictionary a document is created if a document matching the dictionary is not found.
 
+        This is done to prevent duplicate documents from entering the database as tasks run.
+
         Args:
             dicts (dict]): List of dictionaries
         """
