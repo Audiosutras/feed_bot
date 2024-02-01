@@ -10,7 +10,7 @@ class Reddit:
     Reddit API: https://www.reddit.com/dev/api/
     """
 
-    def __init__(self, subreddit: Optional[str], channel_id: Optional[int]):
+    def __init__(self, subreddit="", channel_id=""):
         self.subreddit = subreddit
         self.channel_id = channel_id
 
