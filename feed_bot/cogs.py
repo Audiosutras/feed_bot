@@ -24,12 +24,25 @@ class RedditRSS(commands.Cog):
 
     @subreddit.command(name="add")
     async def add(self, ctx, arg):
-        """Adds subreddit as an rss feed for this channel."""
+        """Add subreddit(s) as an rss feed for this channel.
+
+        If a user is trying to add a subreddit that is already in the db for a channel the
+        existing document is returned. If a subreddit for a channel is not already in the
+        db the subreddit is created in the db.
+        """
         channel = ctx.message.channel
         channel_id = channel.id
         subreddit = arg
-        await self.bot.reddit_collection.insert_one(
-            {"channel_id": channel_id, "subreddit": subreddit}
+        doc_dict = {"channel_id": channel_id, "subreddit": subreddit}
+        filter_dict = {
+            **doc_dict,
+            "title": {"$exists": False},
+            "description": {"$exists": False},
+            "link": {"$exists": False},
+            "sent": {"$exists": False},
+        }
+        await self.bot.reddit_collection.find_one_and_update(
+            filter=filter_dict, update=doc_dict, upsert=True
         )
         await channel.send(f"**Subscribed to r/{subreddit} 'new' listing...**")
 
