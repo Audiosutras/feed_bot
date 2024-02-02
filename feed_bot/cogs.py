@@ -41,10 +41,12 @@ class RedditRSS(commands.Cog):
             "link": {"$exists": False},
             "sent": {"$exists": False},
         }
-        await self.bot.reddit_collection.find_one_and_update(
-            filter=filter_dict, update=doc_dict, upsert=True
-        )
-        await channel.send(f"**Subscribed to r/{subreddit} 'new' listing...**")
+        doc = await self.bot.reddit_collection.find_one(filter_dict)
+        if doc:
+            await channel.send(f"**Already subscribed to r/{subreddit}**")
+        else:
+            await self.bot.reddit_collection.insert_one(doc_dict)
+            await channel.send(f"**Subscribed to r/{subreddit} 'new' listings**")
 
     @subreddit.command(name="start")
     async def start(self, ctx):
