@@ -87,9 +87,10 @@ class RedditRSS(commands.Cog):
             subreddit = sa
             if sa.startswith("r/"):
                 subreddit = sa[2:]
-            doc_dict = {"channel_id": channel_id, "subreddit": subreddit}
-            result = await self.bot.reddit_collection.delete_many(doc_dict)
+            filter_dict = {"channel_id": channel_id, "subreddit": subreddit}
+            result = await self.bot.reddit_collection.delete_many(filter_dict)
             if result.deleted_count >= 1:
+                print(f"Removed r/{subreddit} from channel: {channel_id}")
                 await channel.send(
                     f"**Removed subscription to r/{subreddit} 'new' listings**"
                 )
@@ -97,6 +98,23 @@ class RedditRSS(commands.Cog):
                 await channel.send(
                     f"**Already not subscribed to r/{subreddit} 'new' listings**"
                 )
+
+    @subreddit.command(name="prune")
+    async def prune(self, ctx: commands.Context) -> None:
+        """Removes all subreddit rss feeds within a given channel
+
+        Args:
+            ctx (commands.Context): Invocation Context Object
+        """
+        channel = ctx.message.channel
+        channel_id = channel.id
+        filter_dict = {"channel_id": channel_id, "subreddit": {"$exists": True}}
+        result = await self.bot.reddit_collection.delete_many(filter_dict)
+        if result.deleted_count >= 1:
+            print(f"Removed all subreddits from channel: {channel_id}")
+            await channel.send(f"**Removed subreddit channel subscription**")
+        else:
+            await channel.send(f"**Already removed subreddit channel subscriptions**")
 
     @subreddit.command(name="start")
     async def start(self, ctx: commands.Context) -> None:
