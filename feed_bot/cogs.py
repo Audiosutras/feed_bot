@@ -32,7 +32,9 @@ class RedditRSS(commands.Cog):
 
         Args:
             ctx (commands.Context): Invocation Context
-            arg (str): the subreddit or comma separated list of subreddits to add.
+            arg (str):
+                - the subreddit or comma separated list of subreddits to add.
+                - r/<subreddit> or <subreddit> is acceptable
         """
         channel = ctx.message.channel
         channel_id = channel.id
@@ -44,7 +46,7 @@ class RedditRSS(commands.Cog):
 
         for sa in subreddit_arg:
             subreddit = sa
-            if sa.startswith("r/"):  # r/<subreddit> or <subreddit> is acceptable
+            if sa.startswith("r/"):
                 subreddit = sa[2:]
             doc_dict = {"channel_id": channel_id, "subreddit": subreddit}
             filter_dict = {

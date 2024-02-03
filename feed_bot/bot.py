@@ -63,6 +63,11 @@ class FeedBot(commands.Bot):
 
     @tasks.loop(seconds=60)
     async def pull_subreddit(self, ctx, *args, **kwargs):
+        """Fetches subreddit new listings and stores them in the database
+
+        Args:
+            ctx (commands.Context): Context object
+        """
         cursor = self.reddit_collection.find(
             {
                 "channel_id": {"$exists": True},
@@ -79,8 +84,12 @@ class FeedBot(commands.Bot):
             subreddit = doc.get("subreddit")
             print(f"Channel ID: {channel_id}, Subreddit: {subreddit}")
             r = Reddit(subreddit, channel_id)
-            dicts = r.get_channel_subreddit_dicts()
-            await self.reddit_find_one_or_insert_one_documents(dicts)
+            r.get_channel_subreddit_dicts()
+            if r.error:
+                channel = self.get_channel(channel_id)
+                await channel.send(r.error_msg)
+            else:
+                await self.reddit_find_one_or_insert_one_documents(r.res_dicts)
 
     @tasks.loop(seconds=60)
     async def post_subreddit(self, ctx, *args, **kwargs):
