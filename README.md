@@ -18,21 +18,30 @@ Make sure to enable the `Message Content` intent for the bot whose token you are
 ### Development
 
 #### Running the project is done within a Docker Container
-Make sure that you have Docker installed. After cloning the repository run:
+If you are on linux make sure to check out the [linux post-install](https://docs.docker.com/engine/install/linux-postinstall/) section in the docker docs to giver your user permissions
+
 ```bash
-$ sudo docker compose watch
+$ sudo groupadd docker
+$ sudo usermod -aG docker $USER
+# close and re-open terminal
+$ newgrp docker
+```
+Now that your user has permissions and you have cloned the repository you can run:
+
+```bash
+$ docker compose watch
 ```
 
 This project features hot-reloading of the container (syncing/restarting) when changes are made to the `feed_bot` directory and packages are added to `pyproject.toml`.
 
 To view logs in a different terminal instance run
 ```bash
-$ sudo docker compose logs --follow bot
+$ docker compose logs --follow bot
 ```
 
 To stop the container and remove persisting volumes
 ```bash
-$ sudo docker compose down -v
+$ docker compose down -v
 ```
 
 ### Outside of the container
@@ -55,7 +64,6 @@ $ poetry install
 ```
 
 ### Deployment
-
 This project utilizes [Github Actions](https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions#publishing-a-package-using-an-action) for deploying a production ready docker container to the github container registry. For more information see [working with the container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 
 To push a new container image to github packages create a `release` from the `main` branch with a specified [git tag](https://git-scm.com/book/en/v2/Git-Basics-Tagging). The git tag should be labelled with a version number such as [1.2.3](https://github.com/docker/metadata-action?tab=readme-ov-file#tags-input).

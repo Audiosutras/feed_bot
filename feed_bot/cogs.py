@@ -33,6 +33,8 @@ class RedditRSS(commands.Cog):
         channel = ctx.message.channel
         channel_id = channel.id
         subreddit = arg
+        if arg.includes(","):
+            subreddit = arg.split(",")
         doc_dict = {"channel_id": channel_id, "subreddit": subreddit}
         filter_dict = {
             **doc_dict,
