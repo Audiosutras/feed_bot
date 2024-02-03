@@ -9,8 +9,6 @@ from .utils.reddit import Reddit
 class RedditRSS(commands.Cog):
     """RSS like updates for subreddits from Reddit"""
 
-    collection = "reddit"
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -115,17 +113,3 @@ class RedditRSS(commands.Cog):
             await channel.send(f"**Removed subreddit channel subscription**")
         else:
             await channel.send(f"**Already removed subreddit channel subscriptions**")
-
-    @subreddit.command(name="start")
-    async def start(self, ctx: commands.Context) -> None:
-        """Stops rss feeds feeds service"""
-        self.bot.post_subreddit.start(ctx)
-        self.bot.pull_subreddit.start(ctx)
-        await ctx.send("**Starting reddit rss feed service...**")
-
-    @subreddit.command(name="stop")
-    async def stop(self, ctx: commands.Context) -> None:
-        """Stops rss feeds feeds service"""
-        self.bot.post_subreddit.stop()
-        self.bot.pull_subreddit.stop()
-        await ctx.send("**Stopping reddit rss feed service...**")

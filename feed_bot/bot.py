@@ -28,6 +28,19 @@ class FeedBot(commands.Bot):
         self.db = self.db_client[self.database_name]
         self.reddit_collection = self.db[self.reddit_collection]
 
+    async def setup_hook(self):
+        """A coroutine to be called to setup the bot.
+
+        Overwritten method from commands.Bot
+        """
+        self.post_subreddit.start()
+        self.pull_subreddit.start()
+        await self.add_cog(RedditRSS(self))
+
+    async def on_ready(self):
+        print(f"Logged in as {self.user} (ID: {self.user.id})")
+        print("------")
+
     async def reddit_find_one_or_insert_one_documents(self, dicts: [dict]):
         """For each dictionary a document is created if a document matching the dictionary is not found.
 
@@ -54,15 +67,8 @@ class FeedBot(commands.Bot):
                 inserted.append(result.inserted_id)
         print(f"Of {len(dicts)} new listings {len(inserted)} have been added to db")
 
-    async def setup_hook(self):
-        await self.add_cog(RedditRSS(self))
-
-    async def on_ready(self):
-        print(f"Logged in as {self.user} (ID: {self.user.id})")
-        print("------")
-
     @tasks.loop(seconds=60)
-    async def pull_subreddit(self, ctx, *args, **kwargs):
+    async def pull_subreddit(self, *args, **kwargs):
         """Fetches subreddit new listings and stores them in the database
 
         Args:
@@ -92,7 +98,7 @@ class FeedBot(commands.Bot):
                 await self.reddit_find_one_or_insert_one_documents(r.res_dicts)
 
     @tasks.loop(seconds=60)
-    async def post_subreddit(self, ctx, *args, **kwargs):
+    async def post_subreddit(self, *args, **kwargs):
         """Returns new posts for a subreddit"""
         cursor = self.reddit_collection.find({"sent": False})
         unsent_documents = await cursor.to_list(None)
