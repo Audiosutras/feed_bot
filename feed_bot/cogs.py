@@ -31,7 +31,7 @@ class RedditRSS(commands.Cog):
         db the subreddit is created in the db.
 
         Args:
-            ctx (commands.Context): Invocation Context
+            ctx (commands.Context): Invocation Context Object
             arg (str):
                 - the subreddit or comma separated list of subreddits to add.
                 - r/<subreddit> or <subreddit> is acceptable
@@ -62,6 +62,41 @@ class RedditRSS(commands.Cog):
             else:
                 await self.bot.reddit_collection.insert_one(doc_dict)
                 await channel.send(f"**Subscribed to r/{subreddit} 'new' listings**")
+
+    @subreddit.command(name="rm")
+    async def rm(self, ctx: commands.Context, arg: str) -> None:
+        """Remove rss feed of subreddit(s) from this channel
+
+        Removes both the "reference" marking document and unsent documents
+        with the same channel_id and subreddit
+        Args:
+            ctx (commands.Context): Invocation Context Object
+            arg (str):
+                - the subreddit or comma separated list of subreddits to remove.
+                - r/<subreddit> or <subreddit> is acceptable
+        """
+        channel = ctx.message.channel
+        channel_id = channel.id
+        subreddit_arg = arg
+        if "," in arg:
+            subreddit_arg = arg.split(",")
+        else:
+            subreddit_arg = [arg]
+
+        for sa in subreddit_arg:
+            subreddit = sa
+            if sa.startswith("r/"):
+                subreddit = sa[2:]
+            doc_dict = {"channel_id": channel_id, "subreddit": subreddit}
+            result = await self.bot.reddit_collection.delete_many(doc_dict)
+            if result.deleted_count >= 1:
+                await channel.send(
+                    f"**Removed subscription to r/{subreddit} 'new' listings**"
+                )
+            else:
+                await channel.send(
+                    f"**Already not subscribed to r/{subreddit} 'new' listings**"
+                )
 
     @subreddit.command(name="start")
     async def start(self, ctx: commands.Context) -> None:
