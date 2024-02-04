@@ -16,6 +16,7 @@ services:
     restart: always
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
+      - REDDIT_SECRET=${REDDIT_SECRET}
       - MONGODB_URI=mongodb://root:feed_bot@mongo:27017/
     depends_on:
       - mongo

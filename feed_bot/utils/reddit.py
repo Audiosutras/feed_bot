@@ -1,7 +1,5 @@
 import discord
-import requests
-from requests.exceptions import HTTPError, ConnectionError
-import requests_random_user_agent
+from aiohttp import ClientError
 from typing import Optional
 
 
@@ -14,7 +12,8 @@ class Reddit:
     error = False
     res_dicts = []
 
-    def __init__(self, subreddit="", channel_id=""):
+    def __init__(self, session=None, subreddit="", channel_id=""):
+        self.session = session
         self.subreddit = subreddit
         self.channel_id = channel_id
 
@@ -23,27 +22,28 @@ class Reddit:
         """Url of a subreddit's new posts"""
         return f"https://www.reddit.com/r/{self.subreddit}/new.json?sort=new"
 
-    def get(self, *args, **kwargs):
+    async def request(self, method, *args, **kwargs):
+        """Handles Get Requests for self.url"""
         self.error = False
         self.error_msg = ""
         try:
-            response = requests.get(self.url)
-        except (HTTPError, ConnectionError) as e:
+            match method:
+                case "get":
+                    resp = await self.session.get(self.url, raise_for_status=True)
+                    async with resp:
+                        return resp.json()
+                case _:
+                    self.error = True
+                    self.error_msg = f"**Method {method} not set.**"
+                    return self.error_msg
+        except ClientError as e:
             self.error = True
             self.error_msg = f"**Error occurred while connecting with reddit api: {e}**"
             print(error_msg)  # log error message
             return error_msg
-        else:
-            if response.ok:
-                return response.json()
-            self.error = True
-            self.error_msg = (
-                f"**Received {response.status_code} for subreddit: {self.subreddit}**"
-            )
-            return self.error_msg
 
-    def get_channel_subreddit_dicts(self):
-        response = self.get()
+    async def get_channel_subreddit_dicts(self):
+        response = await self.request(method="get")
         if not self.error:
             children = response["data"]["children"]
             for child_data in children:

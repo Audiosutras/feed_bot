@@ -1,16 +1,17 @@
 version: '3.8'
 
 services:
-  bot:
+  bot-prod:
     image: ghcr.io/audiosutras/feed_bot:latest
     command: sh -c "poetry install --no-interaction --only=main && poetry run bot"
     restart: always
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
-      - MONGODB_URI=mongodb://root:feed_bot@mongo:27017/
+      - REDDIT_SECRET=${REDDIT_SECRET}
+      - MONGODB_URI=mongodb://root:feed_bot@mongo-prod:27017/
     depends_on:
-      - mongo
-  mongo:
+      - mongo-prod
+  mongo-prod:
     image: mongo
     restart: always
     environment:
