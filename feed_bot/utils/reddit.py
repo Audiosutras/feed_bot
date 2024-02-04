@@ -21,7 +21,7 @@ class Reddit:
     @property
     def url(self, *args, **kwargs):
         """Url of a subreddit's new posts"""
-        return f"https://www.reddit.com/r/{self.subreddit}/new.json?sort=new"
+        return f"https://api.reddit.com/r/{self.subreddit}/new.json?sort=new"
 
     def get(self, *args, **kwargs):
         self.error = False
