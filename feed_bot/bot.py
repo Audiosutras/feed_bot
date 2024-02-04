@@ -1,4 +1,16 @@
 """FeedBot
+
+Ensure that you have BOT_TOKEN loaded as an environment variable
+before running this script. Also requires Message Content Intent
+to be enabled for Bot
+
+Documentation:
+- BOT_TOKEN
+    - This is found on the Bot tab under the username for the bot
+    - Click `Reset_Token`, and copy the contents of the string shown into
+    a .env file
+- Message Content Intent
+            - Read More: https://discord.com/developers/docs/topics/gateway#message-content-intent
 """
 import os
 import discord
@@ -13,6 +25,15 @@ load_dotenv()
 
 
 class FeedBot(commands.Bot):
+    """FeedBot Class Inherited from commands.Bot
+
+    commands.Bot Documentation:
+        - https://discordpy.readthedocs.io/en/stable/ext/commands/api.html#bot
+
+    Requires:
+        - Message Content Intent
+            - Read More: https://discord.com/developers/docs/topics/gateway#message-content-intent
+    """
 
     database_name = "feed_bot_db"
     reddit_collection = "reddit"
