@@ -23,7 +23,7 @@ class RedditRSS(commands.Cog):
         self.bot = bot
 
     @commands.group(name="subreddit")
-    @commands.has_permissions(manage_channels=True)
+    @commands.is_owner()
     async def subreddit(self, ctx: commands.Context) -> None:
         """Group command for managing channel subreddit rss feeds"""
         if ctx.invoked_subcommand is None:
@@ -32,7 +32,7 @@ class RedditRSS(commands.Cog):
             )
 
     @subreddit.command(name="add")
-    @commands.has_permissions(manage_channels=True)
+    @commands.is_owner()
     async def add(self, ctx: commands.Context, arg: str) -> None:
         """Add subreddit(s) as an rss feed for this channel.
 
@@ -74,7 +74,7 @@ class RedditRSS(commands.Cog):
                 await channel.send(f"**Subscribed to r/{subreddit} 'new' listings**")
 
     @subreddit.command(name="rm")
-    @commands.has_permissions(manage_channels=True)
+    @commands.is_owner()
     async def rm(self, ctx: commands.Context, arg: str) -> None:
         """Remove rss feed of subreddit(s) from this channel
 
@@ -111,7 +111,7 @@ class RedditRSS(commands.Cog):
                 )
 
     @subreddit.command(name="prune")
-    @commands.has_permissions(manage_channels=True)
+    @commands.is_owner()
     async def prune(self, ctx: commands.Context) -> None:
         """Removes all subreddit rss feeds within a given channel
 
