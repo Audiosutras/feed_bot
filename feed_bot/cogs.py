@@ -1,5 +1,8 @@
-"""Commands for FeedBot registered in FeedBot's setup_hook
+"""Reddit Commands for FeedBot
 
+Commands initialized in setup_hook for FeedBot in bot.py
+
+Cogs Documentation:
 https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
 from discord.ext import commands
@@ -7,12 +10,20 @@ from .utils.reddit import Reddit
 
 
 class RedditRSS(commands.Cog):
-    """RSS like updates for subreddits from Reddit"""
+    """RSS like updates for subreddits from Reddit
+
+    User invoking these commands must have manage_channels permissions for
+    at least the channel that is being invoked.
+
+    For help setting up permissions see:
+    https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ
+    """
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.group(name="subreddit")
+    @commands.has_permissions(manage_channels=True)
     async def subreddit(self, ctx: commands.Context) -> None:
         """Group command for managing channel subreddit rss feeds"""
         if ctx.invoked_subcommand is None:
@@ -21,6 +32,7 @@ class RedditRSS(commands.Cog):
             )
 
     @subreddit.command(name="add")
+    @commands.has_permissions(manage_channels=True)
     async def add(self, ctx: commands.Context, arg: str) -> None:
         """Add subreddit(s) as an rss feed for this channel.
 
@@ -62,6 +74,7 @@ class RedditRSS(commands.Cog):
                 await channel.send(f"**Subscribed to r/{subreddit} 'new' listings**")
 
     @subreddit.command(name="rm")
+    @commands.has_permissions(manage_channels=True)
     async def rm(self, ctx: commands.Context, arg: str) -> None:
         """Remove rss feed of subreddit(s) from this channel
 
@@ -98,6 +111,7 @@ class RedditRSS(commands.Cog):
                 )
 
     @subreddit.command(name="prune")
+    @commands.has_permissions(manage_channels=True)
     async def prune(self, ctx: commands.Context) -> None:
         """Removes all subreddit rss feeds within a given channel
 
