@@ -1,6 +1,13 @@
 import discord
-from aiohttp import ClientError
+import os
+import pdb
+from aiohttp import ClientSession
+import asyncpraw
+from asyncprawcore.exceptions import ResponseException
+from dotenv import load_dotenv
 from typing import Optional
+
+load_dotenv()
 
 
 class Reddit:
@@ -10,59 +17,47 @@ class Reddit:
     """
 
     error = False
+    error_msg = ""
     res_dicts = []
 
-    def __init__(self, session=None, subreddit="", channel_id=""):
-        self.session = session
-        self.subreddit = subreddit
+    def __init__(
+        self,
+        session: ClientSession = None,
+        subreddit_name: str = "",
+        channel_id: str = "",
+    ) -> None:
+        self.subreddit_name = subreddit_name
         self.channel_id = channel_id
+        self.reddit = asyncpraw.Reddit(
+            client_id=os.getenv("REDDIT_CLIENT_ID"),
+            client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
+            password=os.getenv("REDDIT_PASSWORD"),
+            requestor_kwargs=dict(session=session),
+            user_agent=os.getenv("REDDIT_USER_AGENT"),
+            username=os.getenv("REDDIT_USERNAME"),
+        )
 
-    @property
-    def url(self, *args, **kwargs):
-        """Url of a subreddit's new posts"""
-        return f"https://www.reddit.com/r/{self.subreddit}/new.json?sort=new"
-
-    async def request(self, method, *args, **kwargs):
-        """Handles Get Requests for self.url"""
+    async def get_subreddit_new_submissions(self, *args, **kwargs) -> None:
         self.error = False
         self.error_msg = ""
         try:
-            match method:
-                case "get":
-                    resp = await self.session.get(self.url, raise_for_status=True)
-                    async with resp:
-                        return resp.json()
-                case _:
-                    self.error = True
-                    self.error_msg = f"**Method {method} not set.**"
-                    return self.error_msg
-        except ClientError as e:
+            subreddit = await self.reddit.subreddit(self.subreddit_name)
+        except ResponseException as e:
             self.error = True
-            self.error_msg = f"**Error occurred while connecting with reddit api: {e}**"
-            print(error_msg)  # log error message
-            return error_msg
-
-    async def get_channel_subreddit_dicts(self):
-        response = await self.request(method="get")
-        if not self.error:
-            children = response["data"]["children"]
-            for child_data in children:
-                data = child_data.get("data", {})
-                subreddit = data.get("subreddit", "")
-                title = data.get("title", "")[:256]
-                description = data.get("selftext", "")[:256]
-                link = data.get("permalink", "")
-                if description:
-                    return self.res_dicts.append(
-                        dict(
-                            channel_id=self.channel_id,
-                            subreddit=subreddit,
-                            title=title,
-                            description=description,
-                            link=link,
-                            sent=False,  # only storing document in db from here
-                        )
-                    )
+            self.error_msg = f"{e}"
+        else:
+            subreddit_submissions = []
+            async for submission in subreddit.new():
+                submission_dict = dict(
+                    channel_id=self.channel_id,
+                    subreddit=self.subreddit_name,
+                    title=submission.title,
+                    description=submission.selftext[:256],
+                    link=submission.url,
+                    sent=False,
+                )
+                return self.res_dicts.append(submission_dict)
+            print(self.res_dicts)
 
     @staticmethod
     def documents_to_embeds(documents, *args, **kwargs):
@@ -77,7 +72,7 @@ class Reddit:
             object_id = doc.get("_id")
             embed = discord.Embed(
                 title=f"{title}",
-                url=f"https://reddit.com{link}",
+                url=link,
                 description=f"[r/{subreddit}]: {description}",
                 color=discord.Colour.from_rgb(255, 0, 0),
             )

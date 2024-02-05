@@ -11,6 +11,7 @@ python = "^3.12"
 python-dotenv = "^1.0.0"
 motor = "^3.3.2"
 aiohttp = {extras = ["speedups"], version = "^3.9.3"}
+asyncpraw = "^7.7.1"
 
 [tool.poetry.scripts]
 bot = 'feed_bot.bot:main'

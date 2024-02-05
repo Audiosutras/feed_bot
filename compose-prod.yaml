@@ -7,7 +7,11 @@ services:
     restart: always
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
-      - REDDIT_SECRET=${REDDIT_SECRET}
+      - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
+      - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}
+      - REDDIT_USERNAME=${REDDIT_USERNAME}
+      - REDDIT_PASSWORD=${REDDIT_PASSWORD}
+      - REDDIT_USER_AGENT=${REDDIT_USER_AGENT}
       - MONGODB_URI=mongodb://root:feed_bot@mongo-prod:27017/
     depends_on:
       - mongo-prod
