@@ -37,9 +37,13 @@ class Reddit:
             username=os.getenv("REDDIT_USERNAME"),
         )
 
-    async def get_subreddit_new_submissions(self, *args, **kwargs) -> None:
+    def clear(self):
         self.error = False
         self.error_msg = ""
+        self.res_dicts = []
+
+    async def get_subreddit_new_submissions(self, *args, **kwargs) -> None:
+        self.clear()
         try:
             subreddit = await self.reddit.subreddit(self.subreddit_name)
         except ResponseException as e:
@@ -56,8 +60,7 @@ class Reddit:
                     link=submission.url,
                     sent=False,
                 )
-                return self.res_dicts.append(submission_dict)
-            print(self.res_dicts)
+                self.res_dicts.append(submission_dict)
 
     @staticmethod
     def documents_to_embeds(documents, *args, **kwargs):

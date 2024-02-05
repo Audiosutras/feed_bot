@@ -75,6 +75,7 @@ class FeedBot(commands.Bot):
             filter: search dictionary to see if a matching document is within the database
             dicts (dict]): List of dictionaries to become documents
         """
+
         inserted = []
         for d in dicts:
             doc = await self.reddit_collection.find_one(
