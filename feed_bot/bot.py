@@ -15,6 +15,7 @@ Documentation:
 import os
 import discord
 import asyncio
+import aiohttp
 from motor import motor_asyncio
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
@@ -48,12 +49,14 @@ class FeedBot(commands.Bot):
         self.db_client = motor_asyncio.AsyncIOMotorClient(mongodb_uri)
         self.db = self.db_client[self.database_name]
         self.reddit_collection = self.db[self.reddit_collection]
+        self.http_session = None
 
     async def setup_hook(self):
         """A coroutine to be called to setup the bot.
 
         Overwritten method from commands.Bot
         """
+        self.http_session = aiohttp.ClientSession()
         self.post_subreddit.start()
         self.pull_subreddit.start()
         await self.add_cog(RedditRSS(self))
@@ -72,6 +75,7 @@ class FeedBot(commands.Bot):
             filter: search dictionary to see if a matching document is within the database
             dicts (dict]): List of dictionaries to become documents
         """
+
         inserted = []
         for d in dicts:
             doc = await self.reddit_collection.find_one(
@@ -110,8 +114,8 @@ class FeedBot(commands.Bot):
             channel_id = doc.get("channel_id")
             subreddit = doc.get("subreddit")
             print(f"Channel ID: {channel_id}, Subreddit: {subreddit}")
-            r = Reddit(subreddit, channel_id)
-            r.get_channel_subreddit_dicts()
+            r = Reddit(self.http_session, subreddit, channel_id)
+            await r.get_subreddit_new_submissions()
             if r.error:
                 channel = self.get_channel(channel_id)
                 await channel.send(r.error_msg)
