@@ -11,10 +11,24 @@ A discord bot for emulating an rss feed reader within your guild channels
 - #### [Production](#production)
 
 ### Environment Variables
+**For Discord:**
 
 Add `BOT_TOKEN` environment variable. You can get this token [here](https://discord.com/developers/applications/1198387310014767104/information)
 
 Make sure to enable the `Message Content` intent for the bot whose token you are using.
+
+**For Reddit:**
+
+Add the following environment variables:
+```env
+REDDIT_CLIENT_ID=<application_id> # sent in email from reddit after registering app
+REDDIT_CLIENT_SECRET=<client_secret>
+REDDIT_USERNAME=<username>
+REDDIT_PASSWORD=<password_to_login_to_reddit>
+REDDIT_USER_AGENT=<custom_user_agent>
+```
+
+See [asyncpraw documentation](https://asyncpraw.readthedocs.io/en/latest/getting_started/authentication.html) for more information.
 
 ### Development
 
