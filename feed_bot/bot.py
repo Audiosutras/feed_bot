@@ -24,6 +24,8 @@ from .cogs import RedditRSS
 
 load_dotenv()
 
+LOOP_CYCLE = {"minutes": 60} if os.getenv("PROD_ENV") else {"minutes": 1}
+
 
 class FeedBot(commands.Bot):
     """FeedBot Class Inherited from commands.Bot
@@ -57,8 +59,7 @@ class FeedBot(commands.Bot):
         Overwritten method from commands.Bot
         """
         self.http_session = aiohttp.ClientSession()
-        self.post_subreddit.start()
-        self.pull_subreddit.start()
+        self.subreddit_task.start()
         await self.add_cog(RedditRSS(self))
 
     async def on_ready(self):
@@ -92,7 +93,15 @@ class FeedBot(commands.Bot):
                 inserted.append(result.inserted_id)
         print(f"Of {len(dicts)} new listings {len(inserted)} have been added to db")
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(**LOOP_CYCLE)
+    async def subreddit_task(self, *args, **kwargs):
+        await self.pull_subreddit(*args, **kwargs)
+        await self.post_subreddit(*args, **kwargs)
+
+    @subreddit_task.before_loop
+    async def before_subreddit(self):
+        await self.wait_until_ready()  # wait until the bot logs in
+
     async def pull_subreddit(self, *args, **kwargs):
         """Fetches subreddit new listings and stores them in the database
 
@@ -122,7 +131,6 @@ class FeedBot(commands.Bot):
             else:
                 await self.reddit_find_one_or_insert_one_documents(r.res_dicts)
 
-    @tasks.loop(seconds=60)
     async def post_subreddit(self, *args, **kwargs):
         """Returns new posts for a subreddit"""
         cursor = self.reddit_collection.find({"sent": False})
@@ -136,14 +144,6 @@ class FeedBot(commands.Bot):
                 await self.reddit_collection.update_one(
                     filter={"_id": doc_id}, update={"$set": {"sent": True}}
                 )
-
-    @post_subreddit.before_loop
-    async def before_post_subreddit(self):
-        await self.wait_until_ready()  # wait until the bot logs in
-
-    @pull_subreddit.before_loop
-    async def before_pull_subreddit(self):
-        await self.wait_until_ready()
 
 
 def main():

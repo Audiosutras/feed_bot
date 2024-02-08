@@ -73,6 +73,8 @@ class Reddit:
             description = doc.get("description")
             channel_id = doc.get("channel_id")
             object_id = doc.get("_id")
+            if "https://" not in link:
+                link = f"https://www.reddit.com{link}"
             embed = discord.Embed(
                 title=f"{title}",
                 url=link,
