@@ -57,6 +57,7 @@ class FeedBot(commands.Bot):
         Overwritten method from commands.Bot
         """
         self.http_session = aiohttp.ClientSession()
+        print(f"Task Loop Interval: {LOOP_CYCLE}")
         self.subreddit_task.start()
         await self.add_cog(RedditRSS(self))
 
@@ -101,27 +102,31 @@ class FeedBot(commands.Bot):
         await self.wait_until_ready()  # wait until the bot logs in
 
     async def pull_subreddit(self, *args, **kwargs):
-        """Fetches subreddit new listings and stores them in the database
+        """Fetches a channel's subreddit new listings and stores them in the database
 
         Args:
             ctx (commands.Context): Context object
         """
-        cursor = self.reddit_collection.find(
+        pipeline = [
             {
-                "channel_id": {"$exists": True},
-                "subreddit": {"$exists": True},
-                "title": {"$exists": False},
-                "description": {"$exists": False},
-                "link": {"$exists": False},
-                "sent": {"$exists": False},
-            }
-        )
+                "$match": {
+                    "channel_id": {"$exists": True},
+                    "subreddit": {"$exists": True},
+                    "title": {"$exists": False},
+                    "description": {"$exists": False},
+                    "link": {"$exists": False},
+                    "sent": {"$exists": False},
+                }
+            },
+            {"$group": {"_id": "$channel_id", "subreddits": {"$push": "$subreddit"}}},
+        ]
+        cursor = self.reddit_collection.aggregate(pipeline)
         documents = await cursor.to_list(None)
         for doc in documents:
-            channel_id = doc.get("channel_id")
-            subreddit = doc.get("subreddit")
-            print(f"Channel ID: {channel_id}, Subreddit: {subreddit}")
-            r = Reddit(self.http_session, subreddit, channel_id)
+            channel_id = doc.get("_id")
+            subreddits = doc.get("subreddits")
+            print(f"Channel ID: {channel_id}, Subreddits: {subreddits}")
+            r = Reddit(self.http_session, subreddits, channel_id)
             await r.get_subreddit_new_submissions()
             if r.error:
                 channel = self.get_channel(channel_id)

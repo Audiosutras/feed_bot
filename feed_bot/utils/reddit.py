@@ -20,10 +20,10 @@ class Reddit:
     def __init__(
         self,
         session: ClientSession = None,
-        subreddit_name: str = "",
+        subreddit_names: [str] = "",
         channel_id: str = "",
     ) -> None:
-        self.subreddit_name = subreddit_name
+        self.subreddits_query = "+".join(subreddit_names)
         self.channel_id = channel_id
         self.reddit = asyncpraw.Reddit(
             client_id=os.getenv("REDDIT_CLIENT_ID"),
@@ -42,16 +42,15 @@ class Reddit:
     async def get_subreddit_new_submissions(self, *args, **kwargs) -> None:
         self.clear()
         try:
-            subreddit = await self.reddit.subreddit(self.subreddit_name)
+            subreddits = await self.reddit.subreddit(self.subreddits_query)
         except ResponseException as e:
             self.error = True
             self.error_msg = f"{e}"
         else:
-            subreddit_submissions = []
-            async for submission in subreddit.new():
+            async for submission in subreddits.new():
                 submission_dict = dict(
                     channel_id=self.channel_id,
-                    subreddit=self.subreddit_name,
+                    subreddit=submission.subreddit_name_prefixed[2:],
                     title=submission.title,
                     description=submission.selftext[:256],
                     link=submission.url,
