@@ -8,7 +8,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 "discord.py" = "^2.3.2"
-python-dotenv = "^1.0.0"
 motor = "^3.3.2"
 aiohttp = {extras = ["speedups"], version = "^3.9.3"}
 asyncpraw = "^7.7.1"

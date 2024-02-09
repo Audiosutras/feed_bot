@@ -6,6 +6,7 @@ services:
     command: sh -c "poetry install --no-interaction --only=main && poetry run bot"
     restart: always
     environment:
+      - PROD_ENV=True
       - BOT_TOKEN=${BOT_TOKEN}
       - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
       - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}

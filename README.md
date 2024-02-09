@@ -30,14 +30,6 @@ REDDIT_USER_AGENT=<custom_user_agent>
 
 See [asyncpraw documentation](https://asyncpraw.readthedocs.io/en/latest/getting_started/authentication.html) for more information.
 
-**Additional Env Vars:**
-
-```env
-# Set whether the environment is production
-# or development
-PROD_ENV=<boolean>
-```
-
 ### Development
 
 #### Running the project is done within a Docker Container
@@ -107,4 +99,4 @@ $ docker compose -f compose-prod.yaml up -d
 ```
 This will start `Feed Bot`.
 
-**Make sure** you have added your [Bot token](#environment-variables)
+**Make sure** you have loaded the [environment variables](#environment-variables) before running.

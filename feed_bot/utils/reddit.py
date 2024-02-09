@@ -4,10 +4,7 @@ import pdb
 from aiohttp import ClientSession
 import asyncpraw
 from asyncprawcore.exceptions import ResponseException
-from dotenv import load_dotenv
 from typing import Optional
-
-load_dotenv()
 
 
 class Reddit:

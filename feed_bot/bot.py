@@ -18,13 +18,11 @@ import asyncio
 import aiohttp
 from motor import motor_asyncio
 from discord.ext import commands, tasks
-from dotenv import load_dotenv
 from .utils.reddit import Reddit
 from .cogs import RedditRSS
 
-load_dotenv()
 
-LOOP_CYCLE = {"minutes": 60} if os.getenv("PROD_ENV") else {"minutes": 1}
+LOOP_CYCLE = {"minutes": 60} if os.getenv("PROD_ENV", False) else {"minutes": 1}
 
 
 class FeedBot(commands.Bot):
