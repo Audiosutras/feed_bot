@@ -47,15 +47,17 @@ class Reddit:
             self.error_msg = f"{e}"
         else:
             async for submission in subreddits.new():
-                submission_dict = dict(
-                    channel_id=self.channel_id,
-                    subreddit=submission.subreddit_name_prefixed,
-                    title=submission.title,
-                    description=submission.selftext[:256],
-                    link=submission.url,
-                    sent=False,
-                )
-                self.res_dicts.append(submission_dict)
+                # Only selfpost (user content) should be shown
+                if getattr(submission, "permalink"):
+                    submission_dict = dict(
+                        channel_id=self.channel_id,
+                        subreddit=submission.subreddit_name_prefixed,
+                        title=submission.title,
+                        description=submission.selftext[:256],
+                        link=submission.permalink,
+                        sent=False,
+                    )
+                    self.res_dicts.append(submission_dict)
 
     @staticmethod
     def documents_to_embeds(documents, *args, **kwargs):
@@ -72,7 +74,6 @@ class Reddit:
             url: str = link
             if "https://" not in link:
                 url = f"https://www.reddit.com{link}"
-            print(url)
             embed = discord.Embed(
                 title=title,
                 url=url,
