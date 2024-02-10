@@ -4,6 +4,7 @@ import pdb
 from aiohttp import ClientSession
 import asyncpraw
 from asyncprawcore.exceptions import ResponseException
+from discord.errors import HTTPException
 
 
 class Reddit:
@@ -68,13 +69,15 @@ class Reddit:
             description = doc.get("description")
             channel_id = doc.get("channel_id")
             object_id = doc.get("_id")
-            if "https://" not in link:
-                link = f"https://www.reddit.com{link}"
-            embed = discord.Embed(
-                title=f"{title}",
-                url=link,
-                description=f"[{subreddit}]: {description}",
-                color=discord.Colour.from_rgb(255, 0, 0),
-            )
-            channel_embeds.append((channel_id, embed, object_id))
+            try:
+                embed = discord.Embed(
+                    title=f"{title}",
+                    url=link,
+                    description=f"[{subreddit}]: {description}",
+                    color=discord.Colour.from_rgb(255, 0, 0),
+                )
+            except HTTPException as e:
+                print(f"Document not embedded: {e}")
+            else:
+                channel_embeds.append((channel_id, embed, object_id))
         return channel_embeds
