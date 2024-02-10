@@ -127,7 +127,7 @@ class FeedBot(commands.Bot):
             subreddits = doc.get("subreddits")
             print(f"Channel ID: {channel_id}, Subreddits: {subreddits}")
             r = Reddit(self.http_session, subreddits, channel_id)
-            await r.get_subreddit_new_submissions()
+            await r.get_subreddit_submissions()
             if r.error:
                 channel = self.get_channel(channel_id)
                 await channel.send(r.error_msg)

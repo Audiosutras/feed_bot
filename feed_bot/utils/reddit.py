@@ -4,7 +4,6 @@ import pdb
 from aiohttp import ClientSession
 import asyncpraw
 from asyncprawcore.exceptions import ResponseException
-from typing import Optional
 
 
 class Reddit:
@@ -39,7 +38,7 @@ class Reddit:
         self.error_msg = ""
         self.res_dicts = []
 
-    async def get_subreddit_new_submissions(self, *args, **kwargs) -> None:
+    async def get_subreddit_submissions(self, *args, **kwargs) -> None:
         self.clear()
         try:
             subreddits = await self.reddit.subreddit(self.subreddits_query)
@@ -50,7 +49,7 @@ class Reddit:
             async for submission in subreddits.new():
                 submission_dict = dict(
                     channel_id=self.channel_id,
-                    subreddit=submission.subreddit_name_prefixed[2:],
+                    subreddit=submission.subreddit_name_prefixed,
                     title=submission.title,
                     description=submission.selftext[:256],
                     link=submission.url,
@@ -74,7 +73,7 @@ class Reddit:
             embed = discord.Embed(
                 title=f"{title}",
                 url=link,
-                description=f"[r/{subreddit}]: {description}",
+                description=f"[{subreddit}]: {description}",
                 color=discord.Colour.from_rgb(255, 0, 0),
             )
             channel_embeds.append((channel_id, embed, object_id))
