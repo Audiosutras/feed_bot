@@ -30,3 +30,7 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=feed_bot
+    volumes:
+      - mongo-db:/etc/mongodb/data/db
+volumes:
+  mongo-db:

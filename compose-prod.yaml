@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  bot-prod:
+  bot:
     image: ghcr.io/audiosutras/feed_bot:latest
     command: sh -c "poetry install --no-interaction --only=main && poetry run bot"
     restart: always
@@ -13,12 +13,16 @@ services:
       - REDDIT_USERNAME=${REDDIT_USERNAME}
       - REDDIT_PASSWORD=${REDDIT_PASSWORD}
       - REDDIT_USER_AGENT=${REDDIT_USER_AGENT}
-      - MONGODB_URI=mongodb://root:feed_bot@mongo-prod:27017/
+      - MONGODB_URI=mongodb://root:feed_bot@mongo:27017/
     depends_on:
-      - mongo-prod
-  mongo-prod:
+      - mongo
+  mongo:
     image: mongo
     restart: always
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=feed_bot
+    volumes:
+      - mongo-db:/etc/mongodb/data/db
+volumes:
+  mongo-db:
