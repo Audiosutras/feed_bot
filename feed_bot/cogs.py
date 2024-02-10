@@ -31,6 +31,42 @@ class RedditRSS(commands.Cog):
                 "**Invalid subreddit command passed. Type: .help subreddit**"
             )
 
+    @subreddit.command(name="ls")
+    @commands.is_owner()
+    async def ls(self, ctx: commands.Context) -> None:
+        """List the subreddits that this channel subscribes to.
+
+        Args:
+            ctx (commands.Context): context object
+        """
+        channel = ctx.message.channel
+        pipeline = [
+            {
+                "$match": {
+                    "channel_id": channel.id,
+                    "subreddit": {"$exists": True},
+                    "title": {"$exists": False},
+                    "description": {"$exists": False},
+                    "link": {"$exists": False},
+                    "sent": {"$exists": False},
+                }
+            },
+            {"$group": {"_id": "$channel_id", "subreddits": {"$push": "$subreddit"}}},
+        ]
+        cursor = self.bot.reddit_collection.aggregate(pipeline)
+        documents = await cursor.to_list(None)
+        if not documents:
+            await channel.send("**No Subreddit Subscriptions**")
+        else:
+            for doc in documents:  # should be only 1 document
+                channel_id = doc.get("_id")
+                subreddits = doc.get("subreddits")
+                subreddits_str = ", ".join(subreddits)
+                if subreddits:  # this always should be the case
+                    await channel.send(f"**Subreddit Subscriptions: {subreddits_str}**")
+                else:
+                    await channel.send("**No Subreddit Subscriptions**")
+
     @subreddit.command(name="add")
     @commands.is_owner()
     async def add(self, ctx: commands.Context, arg: str) -> None:
