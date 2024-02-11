@@ -4,12 +4,14 @@ A discord bot for emulating an rss feed reader within your guild channels.
 
 [Discord Developer Portal](https://discord.com/developers/applications)
 ---
+
 ### Table of Contents
 - #### [Commands](#commands)
 - #### [Environment Variables](#environment-variables)
 - #### [Development](#development)
 - #### [Deployment](#deployment)
 - #### [Production](#production)
+- #### [Support The Project](#support-the-project)
 
 ### Commands
 
@@ -168,3 +170,10 @@ $ docker compose logs --follow bot
 ```
 
 To close the logs type `CTRL/CMD + C` and to close the ssh connection type `exit` in the terminal.
+
+### Support The Project
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S5UCHCS)
+
+**Alternatives:**
+- [Use My Amazon Affiliate Link](https://amzn.to/3HWDGTo)
