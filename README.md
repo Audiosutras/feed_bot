@@ -5,10 +5,23 @@ A discord bot for emulating an rss feed reader within your guild channels.
 [Discord Developer Portal](https://discord.com/developers/applications)
 ---
 ### Table of Contents
+- #### [Commands](#commands)
 - #### [Environment Variables](#environment-variables)
 - #### [Development](#development)
 - #### [Deployment](#deployment)
 - #### [Production](#production)
+
+### Commands
+
+**Reddit RSS: RSS like updates for subreddits within channels**
+Permissions: Only a guild owner can invoke these commands.
+
+| command  | description  |  Example  |
+|----------|--------------|-----------|
+| `.subreddit ls` | List the subreddits this channel subscribes to. | `.subreddit ls` |
+| `.subreddit add <arg>` | Add subreddit(s) as an rss feed for this channel. | `.subreddit add cyberDeck,r/ROS` or `.subreddit add r/linux`|
+| `.subreddit rm <arg>` | Remove rss feed of subreddit(s) from this channel | `.subreddit rm r/cyberDeck` or `.subreddit rm r/ROS,r/linux` |
+| `.subreddit prune` | Removes all subreddit rss feeds within a given channel | `.subreddit prune` |
 
 ### Environment Variables
 **For Discord:**
