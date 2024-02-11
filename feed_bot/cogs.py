@@ -9,7 +9,7 @@ from discord.ext import commands
 from .utils.reddit import Reddit
 
 
-class RedditRSS(commands.Cog):
+class RedditCommands(commands.Cog):
     """RSS like updates for subreddits from Reddit
 
     User invoking these commands must have manage_channels permissions for
