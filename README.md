@@ -1,6 +1,7 @@
 # Feed Bot
 
-A discord bot for emulating an rss feed reader within your guild channels
+A discord bot for emulating an rss feed reader within your guild channels.
+[MIT License](/MIT-LICENSE.txt)
 
 [Discord Developer Portal](https://discord.com/developers/applications)
 ---
@@ -29,6 +30,8 @@ REDDIT_USER_AGENT=<custom_user_agent>
 ```
 
 See [asyncpraw documentation](https://asyncpraw.readthedocs.io/en/latest/getting_started/authentication.html) for more information.
+
+For managing environment variables we suggest using [direnv](https://direnv.net/docs/installation.html)
 
 ### Development
 
@@ -91,12 +94,65 @@ To push a new container image to github packages create a `release` from the `ma
 
 ### Production
 
-Make sure that you have docker installed. You can either create a file called `compose-prod.yaml` and copy the contents of the `compose-prod.yaml` file that you see in this repository or copy the repository.
+There are a variety of options available to you for deploying `Feed Bot` including on your machine. We will share with you how to deploy this bot to a [Digital Ocean](https://m.do.co/c/b82b00e77afc) droplet. We are choosing Digital Ocean for:
+1) ease of use through the GUI and [CLI](https://docs.digitalocean.com/reference/doctl/)
+2) 100% uptime and resilient infrastructure that only a cloud platform can provide
 
-Run
+Whether hosting on Digital Ocean, another provider, or your local machine make sure that you have [Docker](https://docs.docker.com/) installed.
+- Once Docker is installed create a directory called `feed_bot`.
+- Inside of this directory create a `compose.yaml` file.
+- Copy the contents of [compose-prod.yaml](/compose-prod.yaml) and paste it into the `compose.yaml` file and save the file.
+- Now **make sure** to export [environment variables](#environment-variables)
+- After exporting environment variables you can run the project with `docker compose up -d`. To see the bot in action run `docker compose logs --follow bot`
+
+**[Digital Ocean](https://m.do.co/c/b82b00e77afc) Recommendations**
+
+- After creating a project for your bot(s), `Create` a droplet. The `Create` button can be found in the `Droplets` section.
+- Choose the region closest to your end users. If this is just you, choose the region closest to you.
+- Choose the operating system that you are most familiar with. For demonstration lets stick with `Ubuntu`.
+- Stick with `Basic` for Droplet Size.
+- Select `Premium AMD` and the `$7/mo` plan
+- Choose `SSH Key` for Authentication Method (This is for CLI Access). If this is your first time using Digital Ocean you should be prompted to upload an SSH key otherwise this can be found in `Settings`
+- Under `Finalize Details`, change the field for `Hostname` to something easy and memorable
+- Click `Create Droplet`
+
+**Interact with your droplet**
+
+Run:
 ```bash
-$ docker compose -f compose-prod.yaml up -d
+$ doctl compute ssh <hostname>
 ```
-This will start `Feed Bot`.
+Once in the virtual machine we are going to add docker, direnv, and our `Feed Bot` directory
 
-**Make sure** you have loaded the [environment variables](#environment-variables) before running.
+```bash
+$ snap install docker
+$ apt install direnv
+$ echo 'eval "$(direnv hook bash)"' >> .bashrc
+$ mkdir feed_bot && cd feed_bot
+```
+
+Head to the [environment variables](#environment-variables) section and add them all (include `BOT_TOKEN=`) to a `.envrc` file.
+
+```bash
+# ~/feed_bot
+$ touch .envrc
+$ vim .envrc # add the environment variables key/value pairs and to save (:wq + ENTER)
+$ direnv allow .
+```
+
+If you read above you know we'll need to copy the contents of [compose-prod.yaml](/compose-prod.yaml) into a created `compose.yaml` file.
+
+```bash
+# ~/feed_bot
+$ touch compose.yaml
+$ vim compose.yaml # paste contents of compose-prod.yaml when ready to save do (:wq + ENTER)
+```
+
+Now lets run the bot in the background and see what are bot is doing.
+```bash
+# ~/feed_bot
+$ docker compose up -d
+$ docker compose logs --follow bot
+```
+
+To close the logs type `CTRL/CMD + C` and to close the ssh connection type `exit` in the terminal.
