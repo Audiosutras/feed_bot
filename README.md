@@ -1,7 +1,6 @@
 # Feed Bot
 
 A discord bot for emulating an rss feed reader within your guild channels.
-[MIT License](/MIT-LICENSE.txt)
 
 [Discord Developer Portal](https://discord.com/developers/applications)
 ---
