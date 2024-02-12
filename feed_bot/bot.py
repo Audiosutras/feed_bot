@@ -19,7 +19,7 @@ import aiohttp
 from motor import motor_asyncio
 from discord.ext import commands, tasks
 from .utils.reddit import Reddit
-from .cogs import RedditCommands
+from .cogs import RedditCommands, RSSFeedCommands
 
 
 LOOP_CYCLE = {"minutes": 60} if os.getenv("PROD_ENV", False) else {"minutes": 1}
@@ -60,6 +60,7 @@ class FeedBot(commands.Bot):
         print(f"Task Loop Interval: {LOOP_CYCLE}")
         self.subreddit_task.start()
         await self.add_cog(RedditCommands(self))
+        await self.add_cog(RSSFeedCommands(self))
 
     async def on_ready(self):
         print(f"Logged in as {self.user} (ID: {self.user.id})")

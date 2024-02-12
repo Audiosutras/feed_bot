@@ -1,4 +1,4 @@
-"""Reddit Commands for FeedBot
+"""Commands for FeedBot
 
 Commands initialized in setup_hook for FeedBot in bot.py
 
@@ -7,6 +7,7 @@ https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
 from discord.ext import commands
 from .utils.reddit import Reddit
+from .utils.rss import RSSFeed
 
 
 class RedditCommands(commands.Cog):
@@ -163,3 +164,19 @@ class RedditCommands(commands.Cog):
             await channel.send(f"**Removed subreddit channel subscription**")
         else:
             await channel.send(f"**Already removed subreddit channel subscriptions**")
+
+
+class RSSFeedCommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command(name="rss")
+    @commands.is_owner()
+    async def rss(self, ctx: commands.Context) -> None:
+        channel = ctx.message.channel
+        rss = RSSFeed(session=self.bot.http_session, channel_id=channel.id)
+        feed_urls = [
+            "https://unlimitedhangout.com/feed/",
+            "https://feeds.rssblue.com/unlimited-hangout",
+        ]
+        await rss.get_channel_feeds(feed_urls=feed_urls)
