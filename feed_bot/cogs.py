@@ -179,4 +179,7 @@ class RSSFeedCommands(commands.Cog):
             "https://unlimitedhangout.com/feed/",
             "https://feeds.rssblue.com/unlimited-hangout",
         ]
-        await rss.get_channel_feeds(feed_urls=feed_urls)
+        await rss.get_channel_feeds(feed_urls=feed_urls, feed_key="feed")
+        if rss.error:
+            return await channel.send(res.error_msg)
+        print(rss.res_dicts)

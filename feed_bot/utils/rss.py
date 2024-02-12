@@ -1,6 +1,7 @@
-from aiohttp.web import HTTPException
 import feedparser
+from aiohttp.web import HTTPException
 from .common import CommonUtilities
+from typing import Literal
 
 
 class RSSFeed(CommonUtilities):
@@ -12,7 +13,9 @@ class RSSFeed(CommonUtilities):
             rss = await response.text()
             return feedparser.parse(rss)
 
-    async def get_channel_feeds(self, feed_urls: [str]):
+    async def get_channel_feeds(
+        self, feed_urls: [str], feed_key: Literal["feed", "entries"], *args, **kwargs
+    ) -> None:
         self.clear()
         for url in feed_urls:
             try:
@@ -23,7 +26,7 @@ class RSSFeed(CommonUtilities):
                     f"An error occurred while fetching an rss feed: {e} "
                     f"Channel ID: {self.channel_id}, URL: ${url}"
                 )
-                break  # let's not continue so this url can be fixed/removed
+                break
             else:
                 print(feed_data.get("bozo"))
                 if feed_data.get("bozo", 1) == 1:
@@ -33,6 +36,5 @@ class RSSFeed(CommonUtilities):
                         f"Channel ID: {self.channel_id}, URL: ${url}"
                     )
                     break
-                feed = feed_data.get("feed")
-                self.res_dicts.append(feed)
-        print(self.res_dicts)
+                data = feed_data.get(feed_key)
+                self.res_dicts.append(data)
