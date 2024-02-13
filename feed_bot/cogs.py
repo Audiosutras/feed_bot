@@ -193,11 +193,13 @@ class RSSFeedCommands(commands.Cog):
             rss = RSSFeed(session=self.bot.http_session, channel_id=channel.id)
 
             for url in feed_urls:
-                doc = await self.bot.rss_collection.find_one(
-                    {"channel_id": channel.id, "feed_url": url}
-                )
+                url = url if url.endswith("/") else f"{url}/"
+
+                filter_dict = dict(channel_id=channel.id, feed_url=url)
+                doc = await self.bot.rss_collection.find_one(filter_dict)
 
                 if doc:
+
                     feed = {**doc, "image": {"href": doc["image"]}}
                     embed = rss.create_about_embed(feed=feed)
                     db_found_embeds.append(embed)
@@ -218,7 +220,6 @@ class RSSFeedCommands(commands.Cog):
 
                 db_insert_embeds = []
                 for feed in rss.res_dicts:
-
                     (
                         feed_url,
                         title,
@@ -229,7 +230,8 @@ class RSSFeedCommands(commands.Cog):
                         link,
                         image,
                     ) = rss.parse_feed_flat(feed)
-                    result = await self.bot.rss_collection.insert_one(
+
+                    await self.bot.rss_collection.insert_one(
                         {
                             "channel_id": channel.id,
                             "feed_url": feed_url,
@@ -242,6 +244,7 @@ class RSSFeedCommands(commands.Cog):
                             "image": image,
                         }
                     )
+
                     embed = rss.create_about_embed(feed=feed)
                     db_insert_embeds.append(embed)
 
