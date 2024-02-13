@@ -14,7 +14,11 @@ class RSSFeed(CommonUtilities):
             return feedparser.parse(rss)
 
     async def get_channel_feeds(
-        self, feed_urls: [str], feed_key: Literal["feed", "entries"], *args, **kwargs
+        self,
+        feed_urls: [str],
+        feed_key: Literal["feed", "entries"] = "entries",
+        *args,
+        **kwargs,
     ) -> None:
         self.clear()
         for url in feed_urls:

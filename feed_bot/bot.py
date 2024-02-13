@@ -37,7 +37,8 @@ class FeedBot(commands.Bot):
     """
 
     database_name = "feed_bot_db"
-    reddit_collection = "reddit"
+    reddit_collection_str = "reddit"
+    rss_collection_str = "rss"
 
     def __init__(self):
         intents = discord.Intents.default()
@@ -48,7 +49,8 @@ class FeedBot(commands.Bot):
         mongodb_uri = os.getenv("MONGODB_URI")
         self.db_client = motor_asyncio.AsyncIOMotorClient(mongodb_uri)
         self.db = self.db_client[self.database_name]
-        self.reddit_collection = self.db[self.reddit_collection]
+        self.reddit_collection = self.db[self.reddit_collection_str]
+        self.rss_collection = self.db[self.rss_collection_str]
         self.http_session = None
 
     async def setup_hook(self):
