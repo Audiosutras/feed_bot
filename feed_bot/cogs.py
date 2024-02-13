@@ -322,3 +322,22 @@ class RSSFeedCommands(commands.Cog):
                 await channel.send(
                     f"**New RSS Feed Subscriptions:**", embeds=db_insert_embeds
                 )
+
+    @rss.command(name="prune")
+    @commands.is_owner()
+    async def prune(self, ctx: commands.Context) -> None:
+        """Removes all web rss feeds within a given channel
+
+        Args:
+            ctx (commands.Context): Invocation Context Object
+        """
+        async with ctx.typing():
+            channel = ctx.message.channel
+            channel_id = channel.id
+            filter_dict = {"channel_id": channel_id, "feed_url": {"$exists": True}}
+            result = await self.bot.rss_collection.delete_many(filter_dict)
+            if result.deleted_count >= 1:
+                print(f"Removed all web rss feeds from channel: {channel_id}")
+                await channel.send(f"**Removed web rss feed channel subscription**")
+            else:
+                await channel.send(f"**Already web rss feed channel subscriptions**")
