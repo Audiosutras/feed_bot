@@ -14,7 +14,7 @@ from .utils.rss import RSSFeed
 class RedditCommands(commands.Cog):
     """RSS like updates for subreddits from Reddit
 
-    Only guild owner can invoke these commands.
+    Only the guild owner can invoke these commands.
 
     For help setting up permissions see:
     https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ
@@ -26,7 +26,7 @@ class RedditCommands(commands.Cog):
     @commands.group(name="subreddit")
     @commands.is_owner()
     async def subreddit(self, ctx: commands.Context) -> None:
-        """Group command for managing channel subreddits"""
+        """Commands for managing channel subreddits"""
         if ctx.invoked_subcommand is None:
             await ctx.send(
                 "**Invalid subreddit command passed. Type: .help subreddit**"
@@ -167,19 +167,38 @@ class RedditCommands(commands.Cog):
 
 
 class RSSFeedCommands(commands.Cog):
+    """RSS feed updates within your guild channels
+
+    Only the guild owner can invoke these commands.
+
+    For help setting up permissions see:
+    https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ
+    """
+
     def __init__(self, bot):
         self.bot = bot
 
     @commands.group(name="rss")
     @commands.is_owner()
     async def rss(self, ctx: commands.Context) -> None:
-        """Group command for managing channel rss feeds"""
+        """Commands for managing channel rss feeds"""
         if ctx.invoked_subcommand is None:
             await ctx.send("**Invalid subreddit command passed. Type: .help rss**")
 
     @rss.command(name="add")
     @commands.is_owner()
     async def add(self, ctx: commands.Context, arg: str) -> None:
+        """Adds website rss feeds to the channel.
+
+        Args:
+            ctx (commands.Context): Invocation Context Object
+            arg (str):
+                - the url or comma separated list of urls for the rss feeds to be added
+                - url with or without trailing slash is acceptable
+
+        Returns:
+            None: Nothing is returned from this definition
+        """
         channel = ctx.message.channel
         feed_urls: list = []
         if "," in arg:
