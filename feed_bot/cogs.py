@@ -174,35 +174,39 @@ class RSSFeedCommands(commands.Cog):
     @commands.is_owner()
     async def rss(self, ctx: commands.Context) -> None:
         channel = ctx.message.channel
-        rss = RSSFeed(session=self.bot.http_session, channel_id=channel.id)
-        feed_urls = [
-            "https://unlimitedhangout.com/feed/",
-            "https://corbettreport.com/feed/",
-        ]
-        await rss.get_channel_feeds(feed_urls=feed_urls, feed_key="feed")
-        if rss.error:
-            return await channel.send(res.error_msg)
-        print(len(rss.res_dicts))
-        for feed in rss.res_dicts:
-            title = feed.get("title")
-            subtitle = feed.get("subtitle")
-            author_detail = feed.get("author_detail")
-            author = author_detail.get("name")
-            author_email = author_detail.get("email")
-            rawvoice_subscribe = feed.get("rawvoice_subscribe")
-            feed_url = rawvoice_subscribe.get("feed")
-            link = feed.get("link")
-            image = feed.get("image", {}).get("href", "")
-            ####### find one and insert one ######
+        await channel.send("**working**")
+        async with ctx.typing():
+            rss = RSSFeed(session=self.bot.http_session, channel_id=channel.id)
+            feed_urls = [
+                "https://unlimitedhangout.com/feed/",
+                "https://corbettreport.com/feed/",
+            ]
+            await rss.get_channel_feeds(feed_urls=feed_urls, feed_key="feed")
+            if rss.error:
+                return await channel.send(res.error_msg)
+            print(len(rss.res_dicts))
+            embeds = []
+            for feed in rss.res_dicts:
+                # still need to get the feed url saved (look for it in 'links' key)
+                title = feed.get("title")
+                subtitle = feed.get("subtitle")
+                author_detail = feed.get("author_detail")
+                author = author_detail.get("name")
+                author_email = author_detail.get("email")
+                link = feed.get("link")
+                image = feed.get("image", {}).get("href", "")
+                ####### find one and insert one ######
 
-            ####### insert above #################
-            embed = discord.Embed(
-                title=title, url=link, description=subtitle, color=discord.Colour.teal()
-            )
-            if image:
-                embed.set_thumbnail(url=image)
-            if email := author_detail.get("email"):
-                embed.add_field(name="contact", value=email, inline=False)
-            for key, value in rawvoice_subscribe.items():
-                embed.add_field(name=key[:256], value=value[:1024], inline=False)
-            return await channel.send(embed=embed)
+                ####### insert above #################
+                embed = discord.Embed(
+                    title=title,
+                    url=link,
+                    description=subtitle,
+                    color=discord.Colour.teal(),
+                )
+                if image:
+                    embed.set_thumbnail(url=image)
+                if email := author_detail.get("email"):
+                    embed.add_field(name="contact", value=email, inline=False)
+                embeds.append(embed)
+            await channel.send("**done**", embeds=embeds)
