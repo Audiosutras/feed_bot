@@ -1,9 +1,11 @@
+import os
 from aiohttp import ClientSession
 
 
 class CommonUtilities:
     """CommonUtilities for managing class state and aiohttp sessions"""
 
+    IMAGES_URL = os.getenv("IMAGES_URL", "")
     error = False
     error_msg = ""
     res_dicts = []

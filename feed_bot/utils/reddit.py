@@ -52,8 +52,7 @@ class Reddit(CommonUtilities):
                     )
                     self.res_dicts.append(submission_dict)
 
-    @staticmethod
-    def documents_to_embeds(documents: [dict], *args, **kwargs):
+    def documents_to_embeds(self, documents: [dict], *args, **kwargs):
         """Static method for converting noSql Documents to Discord Embeds"""
         channel_embeds = []
         for doc in documents:
@@ -74,7 +73,10 @@ class Reddit(CommonUtilities):
                 title=title,
                 url=link,
                 description=f"**[{subreddit}]:** {description}",
-                color=discord.Colour.brand_red(),
+                color=discord.Colour.red(),
             )
+            if self.IMAGES_URL:
+                image = f"{self.IMAGES_URL}/reddit-logo.png"
+                embed.set_thumbnail(url=image)
             channel_embeds.append((channel_id, embed, object_id))
         return channel_embeds
