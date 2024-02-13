@@ -185,6 +185,58 @@ class RSSFeedCommands(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send("**Invalid subreddit command passed. Type: .help rss**")
 
+    @rss.command(name="ls")
+    @commands.is_owner()
+    async def ls(self, ctx: commands.Context) -> None:
+        """List the RSS Feeds that this channel subscribes to.
+
+        Args:
+            ctx (commands.Context): Invocation Context Object
+
+        Returns:
+            None
+        """
+        async with ctx.typing():
+            channel = ctx.message.channel
+            pipeline = [
+                {
+                    "$match": {
+                        "channel_id": channel.id,
+                        "feed_url": {"$exists": True},
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$channel_id",
+                        "feeds": {
+                            "$push": {
+                                "feed_url": "$feed_url",
+                                "title": "$title",
+                                "subtitle": "$subtitle",
+                                "summary": "$summary",
+                                "description": "$description",
+                                "author_detail": "$author_detail",
+                                "link": "$link",
+                                "image": "$image",
+                            }
+                        },
+                    }
+                },
+            ]
+            cursor = self.bot.rss_collection.aggregate(pipeline)
+            documents = await cursor.to_list(None)
+            embeds = []
+            rss = RSSFeed()
+            if not documents:
+                await channel.send("**No RSS Feed Subscriptions**")
+            else:
+                for doc in documents:
+                    for feed in doc.get("feeds"):
+                        feed = {**feed, "image": {"href": feed.get("image")}}
+                        embed = rss.create_about_embed(feed=feed)
+                        embeds.append(embed)
+                await channel.send("**Channel RSS Subscriptions:**", embeds=embeds)
+
     @rss.command(name="add")
     @commands.is_owner()
     async def add(self, ctx: commands.Context, arg: str) -> None:
