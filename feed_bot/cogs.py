@@ -26,7 +26,7 @@ class RedditCommands(commands.Cog):
     @commands.group(name="subreddit")
     @commands.is_owner()
     async def subreddit(self, ctx: commands.Context) -> None:
-        """Group command for managing channel subreddit rss feeds"""
+        """Group command for managing channel subreddits"""
         if ctx.invoked_subcommand is None:
             await ctx.send(
                 "**Invalid subreddit command passed. Type: .help subreddit**"
@@ -170,19 +170,27 @@ class RSSFeedCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name="rss")
+    @commands.group(name="rss")
     @commands.is_owner()
     async def rss(self, ctx: commands.Context) -> None:
+        """Group command for managing channel rss feeds"""
+        if ctx.invoked_subcommand is None:
+            await ctx.send("**Invalid subreddit command passed. Type: .help rss**")
+
+    @rss.command(name="add")
+    @commands.is_owner()
+    async def add(self, ctx: commands.Context, arg: str) -> None:
         channel = ctx.message.channel
+        feed_urls: list = []
+        if "," in arg:
+            feed_urls = arg.split(",")
+        else:
+            feed_urls = [arg]
         await channel.send(f"**Getting feeds...**")
         async with ctx.typing():
             db_found_embeds = []
             to_insert = []
             rss = RSSFeed(session=self.bot.http_session, channel_id=channel.id)
-            feed_urls = [
-                "https://unlimitedhangout.com/feed/",
-                "https://corbettreport.com/feed/",
-            ]
 
             for url in feed_urls:
                 doc = await self.bot.rss_collection.find_one(
