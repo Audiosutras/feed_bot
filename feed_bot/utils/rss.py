@@ -32,7 +32,6 @@ class RSSFeed(CommonUtilities):
                 )
                 break
             else:
-                print(feed_data.get("bozo"))
                 if feed_data.get("bozo", 1) == 1:
                     self.error = True
                     self.error_msg = (

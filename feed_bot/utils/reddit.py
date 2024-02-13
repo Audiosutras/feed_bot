@@ -74,7 +74,7 @@ class Reddit(CommonUtilities):
                 title=title,
                 url=link,
                 description=f"**[{subreddit}]:** {description}",
-                color=discord.Colour.from_rgb(255, 0, 0),
+                color=discord.Colour.brand_red(),
             )
             channel_embeds.append((channel_id, embed, object_id))
         return channel_embeds
