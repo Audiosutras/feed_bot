@@ -173,23 +173,70 @@ class RSSFeedCommands(commands.Cog):
     @commands.command(name="rss")
     @commands.is_owner()
     async def rss(self, ctx: commands.Context) -> None:
+        channel = ctx.message.channel
+        await channel.send(f"**Getting feeds...**")
         async with ctx.typing():
-            channel = ctx.message.channel
-            embeds = []
+            db_found_embeds = []
+            to_insert = []
             rss = RSSFeed(session=self.bot.http_session, channel_id=channel.id)
             feed_urls = [
                 "https://unlimitedhangout.com/feed/",
                 "https://corbettreport.com/feed/",
             ]
-            ### find
 
-            ### insert
-            await rss.get_channel_feeds(feed_urls=feed_urls, feed_key="feed")
+            for url in feed_urls:
+                doc = await self.bot.rss_collection.find_one(
+                    {"channel_id": channel.id, "feed_url": url}
+                )
 
-            if rss.error:
-                return await channel.send(res.error_msg)
+                if doc:
+                    feed = {**doc, "image": {"href": doc["image"]}}
+                    embed = rss.create_about_embed(feed=feed)
+                    db_found_embeds.append(embed)
+                else:
+                    to_insert.append(url)
 
-            for feed in rss.res_dicts:
-                embed = rss.create_about_embed(feed)
-                embeds.append(embed)
-            await channel.send(embeds=embeds)
+            if db_found_embeds:
+                await channel.send(
+                    f"**Channel Already Subscribed to RSS Feeds:**",
+                    embeds=db_found_embeds,
+                )
+
+            if to_insert:
+                await rss.parse_feed_urls(feed_urls=to_insert, feed_key="feed")
+
+                if rss.error:
+                    return await channel.send(res.error_msg)
+
+                db_insert_embeds = []
+                for feed in rss.res_dicts:
+
+                    (
+                        feed_url,
+                        title,
+                        subtitle,
+                        summary,
+                        description,
+                        author_detail,
+                        link,
+                        image,
+                    ) = rss.parse_feed_flat(feed)
+                    result = await self.bot.rss_collection.insert_one(
+                        {
+                            "channel_id": channel.id,
+                            "feed_url": feed_url,
+                            "title": title,
+                            "subtitle": subtitle,
+                            "summary": summary,
+                            "description": description,
+                            "author_detail": author_detail,
+                            "link": link,
+                            "image": image,
+                        }
+                    )
+                    embed = rss.create_about_embed(feed=feed)
+                    db_insert_embeds.append(embed)
+
+                await channel.send(
+                    f"**New RSS Feed Subscriptions:**", embeds=db_insert_embeds
+                )
