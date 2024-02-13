@@ -46,7 +46,7 @@ class Reddit(CommonUtilities):
                         channel_id=self.channel_id,
                         subreddit=submission.subreddit_name_prefixed,
                         title=submission.title,
-                        description=submission.selftext[:256],
+                        description=submission.selftext,
                         link=submission.permalink,
                         sent=False,
                     )
@@ -57,20 +57,23 @@ class Reddit(CommonUtilities):
         """Static method for converting noSql Documents to Discord Embeds"""
         channel_embeds = []
         for doc in documents:
-            title = doc.get("title")
+            title = doc.get("title", "")
             link = doc.get("link")
             subreddit = doc.get("subreddit")
-            description = doc.get("description")
+            description = doc.get("description", "")
             channel_id = doc.get("channel_id")
             object_id = doc.get("_id")
 
-            url: str = link
+            if len(title) > 256:
+                title = f"{title[:253]}..."
+            if len(description) > 1000:
+                description = f"{description[:1000]}..."
             if "https://" not in link:
-                url = f"https://www.reddit.com{link}"
+                link = f"https://www.reddit.com{link}"
             embed = discord.Embed(
                 title=title,
-                url=url,
-                description=f"[{subreddit}]: {description}",
+                url=link,
+                description=f"**[{subreddit}]:** {description}",
                 color=discord.Colour.from_rgb(255, 0, 0),
             )
             channel_embeds.append((channel_id, embed, object_id))

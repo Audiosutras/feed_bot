@@ -13,8 +13,7 @@ from .utils.rss import RSSFeed
 class RedditCommands(commands.Cog):
     """RSS like updates for subreddits from Reddit
 
-    User invoking these commands must have manage_channels permissions for
-    at least the channel that is being invoked.
+    Only guild owner can invoke these commands.
 
     For help setting up permissions see:
     https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ
