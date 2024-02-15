@@ -54,7 +54,7 @@ class RSSFeed(CommonUtilities):
 
         description: str = summary or subtitle
 
-        feed_url = ""
+        feed_url = feed.get("feed_url", "")
         for l in feed.get("links", []):
             if l.get("type") == "application/rss+xml":
                 feed_url = l.get("href")
@@ -89,10 +89,13 @@ class RSSFeed(CommonUtilities):
             description=description[:4096],
             color=discord.Colour.teal(),
         )
+        print(feed)
+        print("feed_url", feed_url)
         if image:
             embed.set_thumbnail(url=image)
         if author_name := author_detail.get("name"):
             embed.set_author(name=author_name[:256])
         if email := author_detail.get("email"):
-            embed.add_field(name="contact", value=email[:256], inline=True)
+            embed.add_field(name="contact", value=email[:256], inline=False)
+        embed.add_field(name="feed url", value=feed_url, inline=False)
         return embed
