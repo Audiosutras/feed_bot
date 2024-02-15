@@ -323,6 +323,43 @@ class RSSFeedCommands(commands.Cog):
                     f"**New RSS Feed Subscriptions:**", embeds=db_insert_embeds
                 )
 
+    @rss.command(name="rm")
+    @commands.is_owner()
+    async def rm(self, ctx: commands.Context, arg: str) -> None:
+        """Removes specific rss feeds from this channel
+        Args:
+            ctx (commands.Context): Invocation Context Object
+            arg (str):
+                - the url or comma separated list of urls for the rss feeds to be added
+                - url with or without trailing slash is acceptable
+        """
+        async with ctx.typing():
+            channel = ctx.message.channel
+            feed_urls: list = []
+            if "," in arg:
+                feed_urls = arg.split(",")
+            else:
+                feed_urls = [arg]
+
+            embeds = []
+            for url in feed_urls:
+                url = url if url.endswith("/") else f"{url}/"
+                filter_dict = {"channel_id": channel.id, "feed_url": url}
+                doc = await self.bot.rss_collection.find_one_and_delete(filter_dict)
+                if doc:
+                    feed = {**doc, "image": {"href": doc["image"]}}
+                    title = feed.get("title")
+                    print(f"Removed {title} from channel: {channel.id}")
+                    rss = RSSFeed()
+                    embed = rss.create_about_embed(feed=feed)
+                    embeds.append(embed)
+
+            if embeds:
+                return await channel.send(
+                    f"**Removed RSS Feed Subscription:**", embeds=embeds
+                )
+            return await channel.send(f"**Already Unsubscribed**")
+
     @rss.command(name="prune")
     @commands.is_owner()
     async def prune(self, ctx: commands.Context) -> None:
