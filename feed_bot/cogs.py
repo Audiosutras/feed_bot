@@ -284,13 +284,13 @@ class RSSFeedCommands(commands.Cog):
                 )
 
             if to_insert:
-                await rss.parse_feed_urls(feed_urls=to_insert, feed_key="feed")
+                await rss.parse_feed_urls(feed_urls=to_insert)
 
                 if rss.error:
-                    return await channel.send(res.error_msg)
+                    return await channel.send(f"**{rss.error_msg}**")
 
                 db_insert_embeds = []
-                for feed in rss.res_dicts:
+                for feed, entries in rss.res_dicts:
                     (
                         feed_url,
                         title,
@@ -314,6 +314,10 @@ class RSSFeedCommands(commands.Cog):
                             "link": link,
                             "image": image,
                         }
+                    )
+
+                    await self.bot.find_one_rss_entry_or_insert(
+                        feed_url=feed_url, thumbnail=image, entries=entries
                     )
 
                     embed = rss.create_about_embed(feed=feed)

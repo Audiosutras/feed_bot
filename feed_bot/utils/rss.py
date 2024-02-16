@@ -17,7 +17,7 @@ class RSSFeed(CommonUtilities):
     async def parse_feed_urls(
         self,
         feed_urls: [str],
-        feed_key: Literal["feed", "entries"] = "entries",
+        feed_key: Literal["feed", "entries", None] = None,
         *args,
         **kwargs,
     ) -> None:
@@ -29,7 +29,7 @@ class RSSFeed(CommonUtilities):
                 self.error = True
                 self.error_msg = (
                     f"An error occurred while fetching an rss feed: {e} "
-                    f"Channel ID: {self.channel_id}, URL: ${url}"
+                    f"Channel ID: {self.channel_id}, URL: {url}"
                 )
                 break
             else:
@@ -37,10 +37,15 @@ class RSSFeed(CommonUtilities):
                     self.error = True
                     self.error_msg = (
                         f"Not well-formed XML "
-                        f"Channel ID: {self.channel_id}, URL: ${url}"
+                        f"Channel ID: {self.channel_id}, URL: {url}"
                     )
                     break
-                data = feed_data.get(feed_key)
+                if feed_key is None:
+                    feed = feed_data.get("feed")
+                    entries = feed_data.get("entries")
+                    data = (feed, entries)
+                else:
+                    data = feed_data.get(feed_key)
                 self.res_dicts.append(data)
 
     @staticmethod
@@ -89,8 +94,7 @@ class RSSFeed(CommonUtilities):
             description=description[:4096],
             color=discord.Colour.teal(),
         )
-        print(feed)
-        print("feed_url", feed_url)
+
         if image:
             embed.set_thumbnail(url=image)
         if author_name := author_detail.get("name"):

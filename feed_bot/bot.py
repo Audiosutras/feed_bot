@@ -13,9 +13,11 @@ Documentation:
             - Read More: https://discord.com/developers/docs/topics/gateway#message-content-intent
 """
 import os
-import discord
+import time
 import asyncio
+import discord
 import aiohttp
+from datetime import datetime
 from motor import motor_asyncio
 from discord.ext import commands, tasks
 from .utils.reddit import Reddit
@@ -150,6 +152,32 @@ class FeedBot(commands.Bot):
                 await self.reddit_collection.update_one(
                     filter={"_id": doc_id}, update={"$set": {"sent": True}}
                 )
+
+    async def find_one_rss_entry_or_insert(
+        self,
+        feed_url: str = "",
+        thumbnail: str = "",
+        entries: [dict] = {},
+        *args,
+        **kwargs,
+    ):
+        for entry in entries:
+            seconds_since_epoch = time.mktime(entry.published_parsed)
+            dt = datetime.fromtimestamp(seconds_since_epoch)
+            insert_dict = {
+                "feed_url": feed_url,
+                "thumbnail": thumbnail,
+                "dt_published": dt,
+                **entry,
+            }
+            doc = await self.rss_collection.find_one(insert_dict)
+            inserted = []
+            if not doc:
+                result = await self.rss_collection.insert_one(insert_dict)
+                inserted.append(result.inserted_id)
+        print(
+            f"Of {len(entries)} entries for {feed_url} {len(inserted)} have been added to db"
+        )
 
 
 def main():
