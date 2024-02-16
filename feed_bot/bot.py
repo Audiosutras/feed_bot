@@ -20,7 +20,7 @@ import aiohttp
 from datetime import datetime
 from motor import motor_asyncio
 from discord.ext import commands, tasks
-from .utils.reddit import Reddit
+from .utils.reddit import Reddit, RSSFeed
 from .cogs import RedditCommands, RSSFeedCommands
 
 
@@ -107,11 +107,7 @@ class FeedBot(commands.Bot):
         await self.wait_until_ready()  # wait until the bot logs in
 
     async def pull_subreddit(self, *args, **kwargs):
-        """Fetches a channel's subreddit new listings and stores them in the database
-
-        Args:
-            ctx (commands.Context): Context object
-        """
+        """Fetches a channel's subreddit new listings and stores them in the database"""
         pipeline = [
             {
                 "$match": {
@@ -153,6 +149,33 @@ class FeedBot(commands.Bot):
                     filter={"_id": doc_id}, update={"$set": {"sent": True}}
                 )
 
+    async def update_all_rss_feeds(self):
+        rss = RSSFeed()
+        feed_urls: list = await self.rss_collection(key="feed_url")
+        await rss.parse_feed_urls(feed_urls=feed_urls)
+        if rss.error:
+            return print(f"An error occurred updating rss feeds: {rss.error_msg}")
+        prep_embeds = []
+        for feed, entries in rss.res_dicts:
+            parsed_feed = rss.parse_feed_flat(feed)
+            feed_url = parsed_feed[0]
+            thumbnail = parsed_feed[-1]
+            inserted_entries = await self.find_one_rss_entry_or_insert(
+                feed_url=feed_url, thumbnail=thumbnail, entries=entries
+            )
+            pipeline = [
+                {"$match": {"feed_url": feed_url, "channel_id": {"$exists": True}}},
+                {
+                    "$group": {
+                        "_id": "$feed_url",
+                        "channel_ids": {"$push": "$channel_id"},
+                    }
+                },
+            ]
+            cursor = self.rss_collection.aggregate(pipeline)
+            documents = cursor.to_list(None)
+            ## TODO create embeds for entries and send to channels we just aggregated
+
     async def find_one_rss_entry_or_insert(
         self,
         feed_url: str = "",
@@ -160,7 +183,8 @@ class FeedBot(commands.Bot):
         entries: [dict] = {},
         *args,
         **kwargs,
-    ):
+    ) -> [dict]:
+        inserted = []
         for entry in entries:
             seconds_since_epoch = time.mktime(entry.published_parsed)
             dt = datetime.fromtimestamp(seconds_since_epoch)
@@ -171,13 +195,14 @@ class FeedBot(commands.Bot):
                 **entry,
             }
             doc = await self.rss_collection.find_one(insert_dict)
-            inserted = []
             if not doc:
                 result = await self.rss_collection.insert_one(insert_dict)
-                inserted.append(result.inserted_id)
+                if result.inserted_id:
+                    inserted.append(entry)
         print(
             f"Of {len(entries)} entries for {feed_url} {len(inserted)} have been added to db"
         )
+        return inserted
 
 
 def main():
