@@ -18,7 +18,7 @@ A discord bot for emulating an rss feed reader within your guild channels.
 **Reddit Commands: RSS like updates for subreddits within channels**
 Permissions: Only a guild owner can invoke these commands.
 
-| command  | description  |  Example  |
+| Command  | Description  |  Example  |
 |----------|--------------|-----------|
 | `.subreddit ls` | List the subreddits this channel subscribes to. | `.subreddit ls` |
 | `.subreddit add <arg>` | Add subreddit(s) as an rss feed for this channel. | `.subreddit add cyberDeck,r/ROS` or `.subreddit add r/linux`|
@@ -28,7 +28,7 @@ Permissions: Only a guild owner can invoke these commands.
 **RSS Feed Commands: RSS feed updates within your guild channels**
 Permissions: Only a guild owner can invoke these commands.
 
-| command | description | Example |
+| Command | Description | Example |
 |---------|-------------|---------|
 | `.rss ls` | List the RSS Feeds that this channel subscribes to. | `.subreddit ls` |
 | `.rss add <arg>` | Adds website rss feeds to the channel. | `.subreddit add https://corbettreport.com/feed` or `.subreddit add https://unlimitedhangout.com/feed/,https://corbettreport.com/feed/` *trailing slash optional|
@@ -62,6 +62,17 @@ See [asyncpraw documentation](https://asyncpraw.readthedocs.io/en/latest/getting
 **For Managing Environment Variables"**
 
 For managing environment variables we suggest using [direnv](https://direnv.net/docs/installation.html)
+
+This is what our `.envrc` should look like.
+```envrc
+export BOT_TOKEN=<discord_bot_token_from_developer_portal>
+export REDDIT_CLIENT_ID=<application_id> # sent in email from reddit after registering app
+export REDDIT_CLIENT_SECRET=<client_secret>
+export REDDIT_USERNAME=<username>
+export REDDIT_PASSWORD=<password_to_login_to_reddit>
+export REDDIT_USER_AGENT=<custom_user_agent>
+export IMAGE_URL=<cloudfront_distribution_url_or_s3_url>
+```
 
 ### Development
 
@@ -161,13 +172,13 @@ $ echo 'eval "$(direnv hook bash)"' >> .bashrc
 $ mkdir feed_bot && cd feed_bot
 ```
 
-Head to the [environment variables](#environment-variables) section and add them all (include `BOT_TOKEN=`) to a `.envrc` file.
+Head to the [environment variables](#environment-variables) section and add the env vars.
 
 ```bash
 # ~/feed_bot
 $ touch .envrc
 $ vim .envrc # add the environment variables key/value pairs and to save (:wq + ENTER)
-$ direnv allow .
+$ direnv allow . # you may need to close and reopen the connection to the droplet for direnv to be functional
 ```
 
 If you read above you know we'll need to copy the contents of [compose-prod.yaml](/compose-prod.yaml) into a created `compose.yaml` file.
@@ -178,7 +189,7 @@ $ touch compose.yaml
 $ vim compose.yaml # paste contents of compose-prod.yaml when ready to save do (:wq + ENTER)
 ```
 
-Now lets run the bot in the background and see what are bot is doing.
+Now lets run the bot in the background and see what it is doing.
 ```bash
 # ~/feed_bot
 $ docker compose up -d
@@ -186,6 +197,8 @@ $ docker compose logs --follow bot
 ```
 
 To close the logs type `CTRL/CMD + C` and to close the ssh connection type `exit` in the terminal.
+
+Now re-read the [create a bot account](https://discordpy.readthedocs.io/en/stable/discord.html?highlight=creating%20bot%20account) `discord.py` tutorial. The only thing that is left to do is invite the bot to the discord server(s) you want it in.
 
 ### Support The Project
 
