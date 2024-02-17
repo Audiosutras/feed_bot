@@ -30,9 +30,9 @@ Permissions: Only a guild owner can invoke these commands.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `.rss ls` | List the RSS Feeds that this channel subscribes to. | `.subreddit ls` |
-| `.rss add <arg>` | Adds website rss feeds to the channel. | `.subreddit add https://corbettreport.com/feed` or `.subreddit add https://unlimitedhangout.com/feed/,https://corbettreport.com/feed/` *trailing slash optional|
-| `.rss rm <arg>` | Removes specific rss feeds from channel. | `.subreddit rm https://corbettreport.com/feed` or `.subreddit rm https://unlimitedhangout.com/feed/,https://corbettreport.com/feed/` *trailing slash optional |
+| `.rss ls` | List the RSS Feeds that this channel subscribes to. | `.rss ls` |
+| `.rss add <arg>` | Adds website rss feeds to the channel. | `.rss add https://corbettreport.com/feed` or `.rss add https://unlimitedhangout.com/feed/,https://corbettreport.com/feed/` *trailing slash optional|
+| `.rss rm <arg>` | Removes specific rss feeds from channel. | `.rss rm https://corbettreport.com/feed` or `.rss rm https://unlimitedhangout.com/feed/,https://corbettreport.com/feed/` *trailing slash optional |
 | `.rss prune` | Removes all web rss feeds within a given channel. | `.rss prune` |
 
 ### Environment Variables
