@@ -188,7 +188,7 @@ class FeedBot(commands.Bot):
                 ## create embeds for inserted entries and send to channels we just aggregated
                 embeds = []
                 for entry in inserted_entries:
-                    embed = rss.create_entry_embed(feed=entry)
+                    embed = rss.create_entry_embed(entry=entry)
                     embeds.append(embed)
 
                 for doc in documents:
