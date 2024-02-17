@@ -190,4 +190,5 @@ To close the logs type `CTRL/CMD + C` and to close the ssh connection type `exit
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/S6S5UCHCS)
 
 **Alternatives:**
+- [Use My Digital Ocean Referral Link](https://m.do.co/c/b82b00e77afc)
 - [Use My Amazon Affiliate Link](https://amzn.to/3HWDGTo)
