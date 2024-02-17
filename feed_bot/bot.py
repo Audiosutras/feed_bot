@@ -220,7 +220,7 @@ class FeedBot(commands.Bot):
             if not doc:
                 result = await self.rss_collection.insert_one(insert_dict)
                 if result.inserted_id:
-                    inserted.append(entry)
+                    inserted.append(insert_dict)
         print(
             f"Of {len(entries)} entries for {feed_url} {len(inserted)} have been added to db"
         )
