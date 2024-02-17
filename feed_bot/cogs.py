@@ -330,7 +330,7 @@ class RSSFeedCommands(commands.Cog):
     @rss.command(name="rm")
     @commands.is_owner()
     async def rm(self, ctx: commands.Context, arg: str) -> None:
-        """Removes specific rss feeds from this channel
+        """Removes specific rss feeds from channel
         Args:
             ctx (commands.Context): Invocation Context Object
             arg (str):
