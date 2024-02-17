@@ -21,6 +21,26 @@ class RSSFeed(CommonUtilities):
         *args,
         **kwargs,
     ) -> None:
+        """Iterates of feed_urls performing GET requests
+
+        Exceptions:
+            - Sets self.error and self.error_msg if an exception is encountered during
+            the aiohttp session request. Errors are raised one at a time instead of
+            being grouped together. Could be changed at a future date.
+            - Also sets self.error and self.error_msg if mal-formed XML is encountered.
+            If this error is shown we recommend not adding the url to your channel feeds
+
+        Args:
+            feed_urls (str]): A list of feed urls
+            feed_key (Literal["feed", "entry", None], optional):
+                - Determines the dictionary in the response that will be returned.
+                - Defaults to None.
+                - If None a tuple of dictionaries are returned (feed, entry)
+
+        Returns:
+            None. Note that self.error, self.error_msg, and self.res_dicts are inherited attributes
+            from CommonUtilities and comprise the state of our object.
+        """
         self.clear()
         for url in feed_urls:
             try:
@@ -50,6 +70,14 @@ class RSSFeed(CommonUtilities):
 
     @staticmethod
     def parse_feed_flat(feed: dict) -> [str | dict]:
+        """Receives a feed dictionary and converts it to a list
+
+        Args:
+            feed (dict): Value of the "feed" key in feed_data
+
+        Returns:
+            [str | dict]: Returns a List of strings and/or dictionaries
+        """
         title: str = feed.get("title", "")
         subtitle: str = feed.get("subtitle", "")
         summary: str = feed.get("summary", "")
@@ -78,6 +106,14 @@ class RSSFeed(CommonUtilities):
 
     @staticmethod
     def parse_entry_flat(entry: dict) -> [str | dict]:
+        """Receives an entry dictionary and converts it to a list
+
+        Args:
+            entry (dict): Value of an entry. From the "entries" key in feed_data
+
+        Returns:
+            [str | dict]: Returns a List of strings and/or dictionaries
+        """
         feed_url: str = entry.get("feed_url", "")
         title: str = entry.get("title", "")
         thumbnail: str = entry.get("thumbnail", "")
@@ -101,6 +137,14 @@ class RSSFeed(CommonUtilities):
         ]
 
     def create_about_embed(self, feed: dict) -> discord.Embed:
+        """Converts a feed dictionary into a discord Embed.
+
+        Args:
+            feed (dict): Value of the "feed" key in feed_data
+
+        Returns:
+            discord.Embed: Represents a Discord embed.
+        """
         (
             feed_url,
             title,
@@ -129,6 +173,14 @@ class RSSFeed(CommonUtilities):
         return embed
 
     def create_entry_embed(self, entry: dict) -> discord.Embed:
+        """Converts an entry dictionary into a discord Embed.
+
+        Args:
+            entry (dict): Value of an entry. From the "entries" key in feed_data
+
+        Returns:
+            discord.Embed: Represents a Discord embed.
+        """
         (
             feed_url,
             title,

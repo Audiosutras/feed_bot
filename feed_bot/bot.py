@@ -159,7 +159,18 @@ class FeedBot(commands.Bot):
     async def before_rss_feeds_task(self):
         await self.wait_until_ready()
 
-    async def update_all_rss_feeds(self):
+    async def update_all_rss_feeds(self) -> None:
+        """Sends RSS Feed Updates to subscribed channels.
+
+        Gathers distinct feed_urls from the rss collection and checks if new entries have been added.
+        If entries have been added, channel_ids that subscribe to an updated rss feed receive the new
+        entries as an embed.
+
+        This definition is the core logic of the rss_feeds_task.
+
+        Returns:
+            None
+        """
         rss = RSSFeed(session=self.http_session)
         feed_urls: list = await self.rss_collection.distinct(key="feed_url")
         await rss.parse_feed_urls(feed_urls=feed_urls)
@@ -205,6 +216,20 @@ class FeedBot(commands.Bot):
         *args,
         **kwargs,
     ) -> [dict]:
+        """For each entry a document is created in the rss collection if a matching document for the entry is not found.
+
+        Unlike reddit_find_one_or_insert_one_document at this time, entries are stored with out a channel_id.
+        The feed_url acts as the unique key. See update_all_rss_feeds for how this works for returning new feed_url entries
+        to channels with that given feed_url.
+
+        Args:
+            feed_url (str, optional): _description_. Defaults to "".
+            thumbnail (str, optional): _description_. Defaults to "".
+            entries (dict], optional): _description_. Defaults to {}.
+
+        Returns:
+            [dict]: List of entries that are to be added to the rss collection
+        """
         inserted = []
         for entry in entries:
             seconds_since_epoch = time.mktime(entry.published_parsed)
