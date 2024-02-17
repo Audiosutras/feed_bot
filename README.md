@@ -38,7 +38,7 @@ Permissions: Only a guild owner can invoke these commands.
 ### Environment Variables
 **For Discord:**
 
-Add `BOT_TOKEN` environment variable. You can get this token [here](https://discord.com/developers/applications/1198387310014767104/information)
+Add `BOT_TOKEN` environment variable. See the tutorial from `discord.py` on how to [create a bot account](https://discordpy.readthedocs.io/en/stable/discord.html?highlight=creating%20bot%20account).
 
 Make sure to enable the `Message Content` intent for the bot whose token you are using. The bot will also need the `Send Messages` permission as part of granting the bot access to your server.
 
@@ -52,12 +52,14 @@ REDDIT_USERNAME=<username>
 REDDIT_PASSWORD=<password_to_login_to_reddit>
 REDDIT_USER_AGENT=<custom_user_agent>
 ```
+See [asyncpraw documentation](https://asyncpraw.readthedocs.io/en/latest/getting_started/authentication.html) for more information.
+
 
 **For Images:**
 
 `IMAGES_URL` specifies a url to a cloudfront distribution or s3 url where your images are stored and can be fetched. The `IMAGES_URL` constant is accessed via the `CommonUtilities` class. `Images_Url` returns an empty string if not set.
 
-See [asyncpraw documentation](https://asyncpraw.readthedocs.io/en/latest/getting_started/authentication.html) for more information.
+**For Managing Environment Variables"**
 
 For managing environment variables we suggest using [direnv](https://direnv.net/docs/installation.html)
 
