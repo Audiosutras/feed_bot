@@ -20,7 +20,8 @@ import aiohttp
 from datetime import datetime
 from motor import motor_asyncio
 from discord.ext import commands, tasks
-from .utils.reddit import Reddit, RSSFeed
+from .utils.reddit import Reddit
+from .utils.rss import RSSFeed
 from .cogs import RedditCommands, RSSFeedCommands
 
 
@@ -63,6 +64,7 @@ class FeedBot(commands.Bot):
         self.http_session = aiohttp.ClientSession()
         print(f"Task Loop Interval: {LOOP_CYCLE}")
         self.subreddit_task.start()
+        self.rss_feeds_task.start()
         await self.add_cog(RedditCommands(self))
         await self.add_cog(RSSFeedCommands(self))
 
@@ -149,9 +151,17 @@ class FeedBot(commands.Bot):
                     filter={"_id": doc_id}, update={"$set": {"sent": True}}
                 )
 
+    @tasks.loop(**LOOP_CYCLE)
+    async def rss_feeds_task(self, *args, **kwargs):
+        await self.update_all_rss_feeds(*args, **kwargs)
+
+    @rss_feeds_task.before_loop
+    async def before_rss_feeds_task(self):
+        await self.wait_until_ready()
+
     async def update_all_rss_feeds(self):
-        rss = RSSFeed()
-        feed_urls: list = await self.rss_collection(key="feed_url")
+        rss = RSSFeed(session=self.http_session)
+        feed_urls: list = await self.rss_collection.distinct(key="feed_url")
         await rss.parse_feed_urls(feed_urls=feed_urls)
         if rss.error:
             return print(f"An error occurred updating rss feeds: {rss.error_msg}")
@@ -163,18 +173,29 @@ class FeedBot(commands.Bot):
             inserted_entries = await self.find_one_rss_entry_or_insert(
                 feed_url=feed_url, thumbnail=thumbnail, entries=entries
             )
-            pipeline = [
-                {"$match": {"feed_url": feed_url, "channel_id": {"$exists": True}}},
-                {
-                    "$group": {
-                        "_id": "$feed_url",
-                        "channel_ids": {"$push": "$channel_id"},
-                    }
-                },
-            ]
-            cursor = self.rss_collection.aggregate(pipeline)
-            documents = cursor.to_list(None)
-            ## TODO create embeds for entries and send to channels we just aggregated
+            if inserted_entries:
+                pipeline = [
+                    {"$match": {"feed_url": feed_url, "channel_id": {"$exists": True}}},
+                    {
+                        "$group": {
+                            "_id": "$feed_url",
+                            "channel_ids": {"$addToSet": "$channel_id"},
+                        }
+                    },
+                ]
+                cursor = self.rss_collection.aggregate(pipeline)
+                documents = await cursor.to_list(None)
+                ## create embeds for inserted entries and send to channels we just aggregated
+                embeds = []
+                for entry in inserted_entries:
+                    embed = rss.create_entry_embed(feed=entry)
+                    embeds.append(embed)
+
+                for doc in documents:
+                    channel_ids: list = doc.get("channel_ids")
+                    for channel_id in channel_ids:
+                        channel = self.get_channel(channel_id)
+                        await channel.send(f"**Feed Updates**", embeds=embeds)
 
     async def find_one_rss_entry_or_insert(
         self,
@@ -195,6 +216,7 @@ class FeedBot(commands.Bot):
                 **entry,
             }
             doc = await self.rss_collection.find_one(insert_dict)
+
             if not doc:
                 result = await self.rss_collection.insert_one(insert_dict)
                 if result.inserted_id:

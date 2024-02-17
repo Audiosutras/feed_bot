@@ -76,6 +76,30 @@ class RSSFeed(CommonUtilities):
             image,
         ]
 
+    @staticmethod
+    def parse_entry_flat(entry: dict) -> [str | dict]:
+        feed_url: str = entry.get("feed_url", "")
+        title: str = entry.get("title", "")
+        thumbnail: str = entry.get("thumbnail", "")
+        summary: str = entry.get("summary", "")
+        author_detail: dict = entry.get("author_detail", {})
+        link: str = entry.get("link", "")
+        published: str = entry.get("published", "")
+        content: str = entry.get("content", "")
+        description = summary or content
+
+        return [
+            feed_url,
+            title,
+            thumbnail,
+            summary,
+            author_detail,
+            link,
+            published,
+            content,
+            description,
+        ]
+
     def create_about_embed(self, feed: dict) -> discord.Embed:
         (
             feed_url,
@@ -97,6 +121,36 @@ class RSSFeed(CommonUtilities):
 
         if image:
             embed.set_thumbnail(url=image)
+        if author_name := author_detail.get("name"):
+            embed.set_author(name=author_name[:256])
+        if email := author_detail.get("email"):
+            embed.add_field(name="contact", value=email[:256], inline=False)
+        embed.add_field(name="feed url", value=feed_url, inline=False)
+        return embed
+
+    def create_entry_embed(self, entry: dict) -> discord.Embed:
+        (
+            feed_url,
+            title,
+            thumbnail,
+            summary,
+            author_detail,
+            link,
+            published,
+            content,
+            description,
+        ) = self.parse_entry_flat(entry)
+
+        embed = discord.Embed(
+            title=title,
+            url=link,
+            description=description[:4096],
+            color=discord.Colour.teal(),
+        )
+        if published:
+            embed.add_field(name="published", value=published, inline=False)
+        if thumbnail:
+            embed.set_thumbnail(url=thumbnail)
         if author_name := author_detail.get("name"):
             embed.set_author(name=author_name[:256])
         if email := author_detail.get("email"):
