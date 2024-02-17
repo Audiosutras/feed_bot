@@ -5,16 +5,14 @@ from aiohttp import ClientSession
 import asyncpraw
 from asyncprawcore.exceptions import ResponseException
 
+from .common import CommonUtilities
 
-class Reddit:
-    """Reddit
+
+class Reddit(CommonUtilities):
+    """Utility class for interacting with the reddit api
 
     Reddit API: https://www.reddit.com/dev/api/
     """
-
-    error = False
-    error_msg = ""
-    res_dicts = []
 
     def __init__(
         self,
@@ -22,8 +20,8 @@ class Reddit:
         subreddit_names: [str] = "",
         channel_id: str = "",
     ) -> None:
+        super().__init__(session=session, channel_id=channel_id)
         self.subreddits_query = "+".join(subreddit_names)
-        self.channel_id = channel_id
         self.reddit = asyncpraw.Reddit(
             client_id=os.getenv("REDDIT_CLIENT_ID"),
             client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
@@ -32,11 +30,6 @@ class Reddit:
             user_agent=os.getenv("REDDIT_USER_AGENT"),
             username=os.getenv("REDDIT_USERNAME"),
         )
-
-    def clear(self):
-        self.error = False
-        self.error_msg = ""
-        self.res_dicts = []
 
     async def get_subreddit_submissions(self, *args, **kwargs) -> None:
         self.clear()
@@ -59,8 +52,7 @@ class Reddit:
                     )
                     self.res_dicts.append(submission_dict)
 
-    @staticmethod
-    def documents_to_embeds(documents, *args, **kwargs):
+    def documents_to_embeds(self, documents: [dict], *args, **kwargs):
         """Static method for converting noSql Documents to Discord Embeds"""
         channel_embeds = []
         for doc in documents:
@@ -81,7 +73,10 @@ class Reddit:
                 title=title,
                 url=link,
                 description=f"**[{subreddit}]:** {description}",
-                color=discord.Colour.from_rgb(255, 0, 0),
+                color=discord.Colour.red(),
             )
+            if self.IMAGES_URL:
+                image = f"{self.IMAGES_URL}/reddit-logo.png"
+                embed.set_thumbnail(url=image)
             channel_embeds.append((channel_id, embed, object_id))
         return channel_embeds

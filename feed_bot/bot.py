@@ -13,13 +13,16 @@ Documentation:
             - Read More: https://discord.com/developers/docs/topics/gateway#message-content-intent
 """
 import os
-import discord
+import time
 import asyncio
+import discord
 import aiohttp
+from datetime import datetime
 from motor import motor_asyncio
 from discord.ext import commands, tasks
 from .utils.reddit import Reddit
-from .cogs import RedditRSS
+from .utils.rss import RSSFeed
+from .cogs import RedditCommands, RSSFeedCommands
 
 
 LOOP_CYCLE = {"minutes": 60} if os.getenv("PROD_ENV", False) else {"minutes": 1}
@@ -37,7 +40,8 @@ class FeedBot(commands.Bot):
     """
 
     database_name = "feed_bot_db"
-    reddit_collection = "reddit"
+    reddit_collection_str = "reddit"
+    rss_collection_str = "rss"
 
     def __init__(self):
         intents = discord.Intents.default()
@@ -48,7 +52,8 @@ class FeedBot(commands.Bot):
         mongodb_uri = os.getenv("MONGODB_URI")
         self.db_client = motor_asyncio.AsyncIOMotorClient(mongodb_uri)
         self.db = self.db_client[self.database_name]
-        self.reddit_collection = self.db[self.reddit_collection]
+        self.reddit_collection = self.db[self.reddit_collection_str]
+        self.rss_collection = self.db[self.rss_collection_str]
         self.http_session = None
 
     async def setup_hook(self):
@@ -59,7 +64,9 @@ class FeedBot(commands.Bot):
         self.http_session = aiohttp.ClientSession()
         print(f"Task Loop Interval: {LOOP_CYCLE}")
         self.subreddit_task.start()
-        await self.add_cog(RedditRSS(self))
+        self.rss_feeds_task.start()
+        await self.add_cog(RedditCommands(self))
+        await self.add_cog(RSSFeedCommands(self))
 
     async def on_ready(self):
         print(f"Logged in as {self.user} (ID: {self.user.id})")
@@ -102,11 +109,7 @@ class FeedBot(commands.Bot):
         await self.wait_until_ready()  # wait until the bot logs in
 
     async def pull_subreddit(self, *args, **kwargs):
-        """Fetches a channel's subreddit new listings and stores them in the database
-
-        Args:
-            ctx (commands.Context): Context object
-        """
+        """Fetches a channel's subreddit new listings and stores them in the database"""
         pipeline = [
             {
                 "$match": {
@@ -147,6 +150,106 @@ class FeedBot(commands.Bot):
                 await self.reddit_collection.update_one(
                     filter={"_id": doc_id}, update={"$set": {"sent": True}}
                 )
+
+    @tasks.loop(**LOOP_CYCLE)
+    async def rss_feeds_task(self, *args, **kwargs):
+        await self.update_all_rss_feeds(*args, **kwargs)
+
+    @rss_feeds_task.before_loop
+    async def before_rss_feeds_task(self):
+        await self.wait_until_ready()
+
+    async def update_all_rss_feeds(self) -> None:
+        """Sends RSS Feed Updates to subscribed channels.
+
+        Gathers distinct feed_urls from the rss collection and checks if new entries have been added.
+        If entries have been added, channel_ids that subscribe to an updated rss feed receive the new
+        entries as an embed.
+
+        This definition is the core logic of the rss_feeds_task.
+
+        Returns:
+            None
+        """
+        rss = RSSFeed(session=self.http_session)
+        feed_urls: list = await self.rss_collection.distinct(key="feed_url")
+        await rss.parse_feed_urls(feed_urls=feed_urls)
+        if rss.error:
+            return print(f"An error occurred updating rss feeds: {rss.error_msg}")
+        prep_embeds = []
+        for feed, entries in rss.res_dicts:
+            parsed_feed = rss.parse_feed_flat(feed)
+            feed_url = parsed_feed[0]
+            thumbnail = parsed_feed[-1]
+            inserted_entries = await self.find_one_rss_entry_or_insert(
+                feed_url=feed_url, thumbnail=thumbnail, entries=entries
+            )
+            if inserted_entries:
+                pipeline = [
+                    {"$match": {"feed_url": feed_url, "channel_id": {"$exists": True}}},
+                    {
+                        "$group": {
+                            "_id": "$feed_url",
+                            "channel_ids": {"$addToSet": "$channel_id"},
+                        }
+                    },
+                ]
+                cursor = self.rss_collection.aggregate(pipeline)
+                documents = await cursor.to_list(None)
+                ## create embeds for inserted entries and send to channels we just aggregated
+                embeds = []
+                for entry in inserted_entries:
+                    embed = rss.create_entry_embed(entry=entry)
+                    embeds.append(embed)
+
+                for doc in documents:
+                    channel_ids: list = doc.get("channel_ids")
+                    for channel_id in channel_ids:
+                        channel = self.get_channel(channel_id)
+                        await channel.send(f"**Feed Updates**", embeds=embeds)
+
+    async def find_one_rss_entry_or_insert(
+        self,
+        feed_url: str = "",
+        thumbnail: str = "",
+        entries: [dict] = {},
+        *args,
+        **kwargs,
+    ) -> [dict]:
+        """For each entry a document is created in the rss collection if a matching document for the entry is not found.
+
+        Unlike reddit_find_one_or_insert_one_document at this time, entries are stored with out a channel_id.
+        The feed_url acts as the unique key. See update_all_rss_feeds for how this works for returning new feed_url entries
+        to channels with that given feed_url.
+
+        Args:
+            feed_url (str, optional): _description_. Defaults to "".
+            thumbnail (str, optional): _description_. Defaults to "".
+            entries (dict], optional): _description_. Defaults to {}.
+
+        Returns:
+            [dict]: List of entries that are to be added to the rss collection
+        """
+        inserted = []
+        for entry in entries:
+            seconds_since_epoch = time.mktime(entry.published_parsed)
+            dt = datetime.fromtimestamp(seconds_since_epoch)
+            insert_dict = {
+                "feed_url": feed_url,
+                "thumbnail": thumbnail,
+                "dt_published": dt,
+                **entry,
+            }
+            doc = await self.rss_collection.find_one(insert_dict)
+
+            if not doc:
+                result = await self.rss_collection.insert_one(insert_dict)
+                if result.inserted_id:
+                    inserted.append(insert_dict)
+        print(
+            f"Of {len(entries)} entries for {feed_url} {len(inserted)} have been added to db"
+        )
+        return inserted
 
 
 def main():

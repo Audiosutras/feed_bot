@@ -15,7 +15,7 @@ A discord bot for emulating an rss feed reader within your guild channels.
 
 ### Commands
 
-**Reddit RSS: RSS like updates for subreddits within channels**
+**Reddit Commands: RSS like updates for subreddits within channels**
 Permissions: Only a guild owner can invoke these commands.
 
 | command  | description  |  Example  |
@@ -24,6 +24,16 @@ Permissions: Only a guild owner can invoke these commands.
 | `.subreddit add <arg>` | Add subreddit(s) as an rss feed for this channel. | `.subreddit add cyberDeck,r/ROS` or `.subreddit add r/linux`|
 | `.subreddit rm <arg>` | Remove rss feed of subreddit(s) from this channel | `.subreddit rm r/cyberDeck` or `.subreddit rm r/ROS,r/linux` |
 | `.subreddit prune` | Removes all subreddit rss feeds within a given channel | `.subreddit prune` |
+
+**RSS Feed Commands: RSS feed updates within your guild channels**
+Permissions: Only a guild owner can invoke these commands.
+
+| command | description | Example |
+|---------|-------------|---------|
+| `.rss ls` | List the RSS Feeds that this channel subscribes to. | `.subreddit ls` |
+| `.rss add <arg>` | Adds website rss feeds to the channel. | `.subreddit add https://corbettreport.com/feed` or `.subreddit add https://unlimitedhangout.com/feed/,https://corbettreport.com/feed/` *trailing slash optional|
+| `.rss rm <arg>` | Removes specific rss feeds from channel. | `.subreddit rm https://corbettreport.com/feed` or `.subreddit rm https://unlimitedhangout.com/feed/,https://corbettreport.com/feed/` *trailing slash optional |
+| `.rss prune` | Removes all web rss feeds within a given channel. | `.rss prune` |
 
 ### Environment Variables
 **For Discord:**
@@ -42,6 +52,10 @@ REDDIT_USERNAME=<username>
 REDDIT_PASSWORD=<password_to_login_to_reddit>
 REDDIT_USER_AGENT=<custom_user_agent>
 ```
+
+**For Images:**
+
+`IMAGES_URL` specifies a url to a cloudfront distribution or s3 url where your images are stored and can be fetched. The `IMAGES_URL` constant is accessed via the `CommonUtilities` class. `Images_Url` returns an empty string if not set.
 
 See [asyncpraw documentation](https://asyncpraw.readthedocs.io/en/latest/getting_started/authentication.html) for more information.
 
