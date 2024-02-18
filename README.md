@@ -18,6 +18,8 @@ A discord bot for emulating an rss feed reader within your guild channels.
 **Reddit Commands: RSS like updates for subreddits within channels**
 Permissions: Only a guild owner can invoke these commands.
 
+![Image of Reddit Feeds In Action](/docs/images/reddit-rss-screenshot.png)
+
 | Command  | Description  |  Example  |
 |----------|--------------|-----------|
 | `.subreddit ls` | List the subreddits this channel subscribes to. | `.subreddit ls` |
@@ -27,6 +29,8 @@ Permissions: Only a guild owner can invoke these commands.
 
 **RSS Feed Commands: RSS feed updates within your guild channels**
 Permissions: Only a guild owner can invoke these commands.
+
+![Image of RSS Add Feeds Command In Actions](/docs/images/rss-add-command.png)
 
 | Command | Description | Example |
 |---------|-------------|---------|
