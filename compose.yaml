@@ -12,7 +12,7 @@ services:
           target: /code/feed_bot
         - action: rebuild
           path: pyproject.toml
-    command: sh -c "poetry install --no-interaction --only=main && poetry run bot"
+    command: sh -c "poetry install --no-interaction --only=main,tests && poetry run bot"
     restart: always
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
