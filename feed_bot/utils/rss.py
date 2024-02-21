@@ -43,30 +43,31 @@ class RSSFeed(CommonUtilities):
         """
         self.clear()
         for url in feed_urls:
-            try:
-                feed_data = await self.get_rss_feed(url=url)
-            except HTTPException as e:
-                self.error = True
-                self.error_msg = (
-                    f"An error occurred while fetching an rss feed: {e} "
-                    f"Channel ID: {self.channel_id}, URL: {url}"
-                )
-                break
-            else:
-                if feed_data.get("bozo", 1) == 1:
+            if url:
+                try:
+                    feed_data = await self.get_rss_feed(url=url)
+                except HTTPException as e:
                     self.error = True
                     self.error_msg = (
-                        f"Not well-formed XML "
+                        f"An error occurred while fetching an rss feed: {e} "
                         f"Channel ID: {self.channel_id}, URL: {url}"
                     )
                     break
-                if feed_key is None:
-                    feed = feed_data.get("feed")
-                    entries = feed_data.get("entries")
-                    data = (feed, entries)
                 else:
-                    data = feed_data.get(feed_key)
-                self.res_dicts.append(data)
+                    if feed_data.get("bozo", 1) == 1:
+                        self.error = True
+                        self.error_msg = (
+                            f"Not well-formed XML "
+                            f"Channel ID: {self.channel_id}, URL: {url}"
+                        )
+                        break
+                    if feed_key is None:
+                        feed = feed_data.get("feed")
+                        entries = feed_data.get("entries")
+                        data = (feed, entries)
+                    else:
+                        data = feed_data.get(feed_key)
+                    self.res_dicts.append(data)
 
     @staticmethod
     def parse_feed_flat(feed: dict) -> [str | dict]:
