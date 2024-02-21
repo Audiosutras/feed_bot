@@ -157,10 +157,14 @@ class RSSFeed(CommonUtilities):
             image,
         ) = self.parse_feed_flat(feed)
 
+        if len(title) > 256:
+            title = f"{title[:253]}..."
+        if len(description) > 4000:
+            description = f"{description[:4000]}..."
         embed = discord.Embed(
             title=title,
             url=link,
-            description=description[:4096],
+            description=description,
             color=discord.Colour.teal(),
         )
 
@@ -194,10 +198,15 @@ class RSSFeed(CommonUtilities):
             description,
         ) = self.parse_entry_flat(entry)
 
+        if len(title) > 256:
+            title = f"{title[:253]}..."
+        if len(description) > 4000:
+            description = f"{description[:4000]}..."
+
         embed = discord.Embed(
             title=title,
             url=link,
-            description=description[:4096],
+            description=description,
             color=discord.Colour.teal(),
         )
         if published:
