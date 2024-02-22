@@ -102,6 +102,12 @@ To view logs in a different terminal instance run
 $ docker compose logs --follow bot
 ```
 
+To open a shell to the noSQL database run
+```bash
+$ docker compose exec mongo mongosh mongodb://root:feed_bot@mongo:27017/
+```
+[mongodb cheatsheet](https://dev.to/yaswanthteja/all-mongodb-database-commands-mongodb-cheatsheet-146k)
+
 To stop the container and remove persisting volumes
 ```bash
 $ docker compose down -v
