@@ -108,6 +108,11 @@ $ docker compose exec mongo mongosh mongodb://root:feed_bot@mongo:27017/
 ```
 [mongodb cheatsheet](https://dev.to/yaswanthteja/all-mongodb-database-commands-mongodb-cheatsheet-146k)
 
+To run test cases run
+```bash
+$ docker compose exec bot sh -c "poetry run pytest"
+```
+
 To stop the container and remove persisting volumes
 ```bash
 $ docker compose down -v
