@@ -52,8 +52,6 @@ class Reddit(CommonUtilities):
                         sent=False,
                     )
                     self.res_dicts.append(submission_dict)
-        finally:
-            await self.reddit.close()
 
     def documents_to_embeds(self, documents: [dict], *args, **kwargs):
         """Static method for converting noSql Documents to Discord Embeds"""
