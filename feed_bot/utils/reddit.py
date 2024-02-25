@@ -3,7 +3,8 @@ import os
 import pdb
 from aiohttp import ClientSession
 import asyncpraw
-from asyncprawcore.exceptions import ResponseException
+from asyncpraw.exceptions import RedditAPIException, ClientException
+from asyncprawcore import AsyncPrawcoreException
 
 from .common import CommonUtilities
 
@@ -35,7 +36,7 @@ class Reddit(CommonUtilities):
         self.clear()
         try:
             subreddits = await self.reddit.subreddit(self.subreddits_query)
-        except ResponseException as e:
+        except (RedditAPIException, ClientException, AsyncPrawcoreException) as e:
             self.error = True
             self.error_msg = f"{e}"
         else:
