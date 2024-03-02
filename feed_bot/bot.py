@@ -234,15 +234,17 @@ class FeedBot(commands.Bot):
         for entry in entries:
             seconds_since_epoch = time.mktime(entry.published_parsed)
             dt = datetime.fromtimestamp(seconds_since_epoch)
-            insert_dict = {
+            find_dict = {
                 "feed_url": feed_url,
+                "title": entry.title,
                 "thumbnail": thumbnail,
                 "dt_published": dt,
-                **entry,
             }
-            doc = await self.rss_collection.find_one(insert_dict)
+
+            doc = await self.rss_collection.find_one(find_dict)
 
             if not doc:
+                insert_dict = {**find_dict, **entry}
                 result = await self.rss_collection.insert_one(insert_dict)
                 if result.inserted_id:
                     inserted.append(insert_dict)
