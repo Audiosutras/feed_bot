@@ -123,7 +123,12 @@ class RSSFeed(CommonUtilities):
         link: str = entry.get("link", "")
         published: str = entry.get("published", "")
         content: str = entry.get("content", "")
-        description = summary or content
+        imageurl: str = entry.get("imageurl", "")
+        description: str = summary or content
+        # expecting for imageurl to not be a rss/atom feed standard enclosure
+        # The element for the article image for feeds could different.
+        # See description above for what entry_image is planned to do.
+        entry_image: str = imageurl
 
         return [
             feed_url,
@@ -135,6 +140,7 @@ class RSSFeed(CommonUtilities):
             published,
             content,
             description,
+            entry_image,
         ]
 
     def create_about_embed(self, feed: dict) -> discord.Embed:
@@ -196,6 +202,7 @@ class RSSFeed(CommonUtilities):
             published,
             content,
             description,
+            entry_image,
         ) = self.parse_entry_flat(entry)
 
         if len(title) > 256:
@@ -209,6 +216,9 @@ class RSSFeed(CommonUtilities):
             description=description,
             color=discord.Colour.teal(),
         )
+
+        if entry_image:
+            embed.set_image(url=entry_image)
         if published:
             embed.add_field(name="published", value=published, inline=False)
         if thumbnail:
