@@ -1,7 +1,7 @@
 import discord
 import feedparser
 from aiohttp.web import HTTPException
-from .common import CommonUtilities
+from .common import CommonUtilities, IMAGE_MIME_TYPES
 from typing import Literal
 
 
@@ -123,7 +123,15 @@ class RSSFeed(CommonUtilities):
         link: str = entry.get("link", "")
         published: str = entry.get("published", "")
         content: str = entry.get("content", "")
-        description = summary or content
+        entry_image: str = entry.get("imageurl", "")
+        description: str = summary or content
+
+        links: list = entry.get("links", [])
+        if not entry_image:
+            for l in links:
+                if l.get("type") in IMAGE_MIME_TYPES:
+                    entry_image = l.get("href", "")
+                    break
 
         return [
             feed_url,
@@ -135,6 +143,7 @@ class RSSFeed(CommonUtilities):
             published,
             content,
             description,
+            entry_image,
         ]
 
     def create_about_embed(self, feed: dict) -> discord.Embed:
@@ -196,6 +205,7 @@ class RSSFeed(CommonUtilities):
             published,
             content,
             description,
+            entry_image,
         ) = self.parse_entry_flat(entry)
 
         if len(title) > 256:
@@ -209,6 +219,9 @@ class RSSFeed(CommonUtilities):
             description=description,
             color=discord.Colour.teal(),
         )
+
+        if entry_image:
+            embed.set_image(url=entry_image)
         if published:
             embed.add_field(name="published", value=published, inline=False)
         if thumbnail:
