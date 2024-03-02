@@ -41,32 +41,41 @@ class RedditCommands(commands.Cog):
             ctx (commands.Context): context object
         """
         channel = ctx.message.channel
-        pipeline = [
-            {
-                "$match": {
-                    "channel_id": channel.id,
-                    "subreddit": {"$exists": True},
-                    "title": {"$exists": False},
-                    "description": {"$exists": False},
-                    "link": {"$exists": False},
-                    "sent": {"$exists": False},
-                }
-            },
-            {"$group": {"_id": "$channel_id", "subreddits": {"$push": "$subreddit"}}},
-        ]
-        cursor = self.bot.reddit_collection.aggregate(pipeline)
-        documents = await cursor.to_list(None)
-        if not documents:
-            await channel.send("**No Subreddit Subscriptions**")
-        else:
-            for doc in documents:  # should be only 1 document
-                channel_id = doc.get("_id")
-                subreddits = doc.get("subreddits")
-                subreddits_str = ", ".join(subreddits)
-                if subreddits:  # this always should be the case
-                    await channel.send(f"**Subreddit Subscriptions: {subreddits_str}**")
-                else:
-                    await channel.send("**No Subreddit Subscriptions**")
+        await channel.send(f"**Getting subreddits...**")
+        async with ctx.typing():
+            pipeline = [
+                {
+                    "$match": {
+                        "channel_id": channel.id,
+                        "subreddit": {"$exists": True},
+                        "title": {"$exists": False},
+                        "description": {"$exists": False},
+                        "link": {"$exists": False},
+                        "sent": {"$exists": False},
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$channel_id",
+                        "subreddits": {"$push": "$subreddit"},
+                    }
+                },
+            ]
+            cursor = self.bot.reddit_collection.aggregate(pipeline)
+            documents = await cursor.to_list(None)
+            if not documents:
+                await channel.send("**No Subreddit Subscriptions**")
+            else:
+                for doc in documents:  # should be only 1 document
+                    channel_id = doc.get("_id")
+                    subreddits = doc.get("subreddits")
+                    subreddits_str = ", ".join(subreddits)
+                    if subreddits:  # this always should be the case
+                        await channel.send(
+                            f"**Subreddit Subscriptions: {subreddits_str}**"
+                        )
+                    else:
+                        await channel.send("**No Subreddit Subscriptions**")
 
     @subreddit.command(name="add")
     @commands.is_owner()
@@ -91,24 +100,27 @@ class RedditCommands(commands.Cog):
         else:
             subreddit_arg = [arg]
 
-        for sa in subreddit_arg:
-            subreddit = sa
-            if sa.startswith("r/"):
-                subreddit = sa[2:]
-            doc_dict = {"channel_id": channel_id, "subreddit": subreddit}
-            filter_dict = {
-                **doc_dict,
-                "title": {"$exists": False},
-                "description": {"$exists": False},
-                "link": {"$exists": False},
-                "sent": {"$exists": False},
-            }
-            doc = await self.bot.reddit_collection.find_one(filter_dict)
-            if doc:
-                await channel.send(f"**Already subscribed to r/{subreddit}**")
-            else:
-                await self.bot.reddit_collection.insert_one(doc_dict)
-                await channel.send(f"**Subscribed to r/{subreddit} 'new' listings**")
+        async with ctx.typing():
+            for sa in subreddit_arg:
+                subreddit = sa
+                if sa.startswith("r/"):
+                    subreddit = sa[2:]
+                doc_dict = {"channel_id": channel_id, "subreddit": subreddit}
+                filter_dict = {
+                    **doc_dict,
+                    "title": {"$exists": False},
+                    "description": {"$exists": False},
+                    "link": {"$exists": False},
+                    "sent": {"$exists": False},
+                }
+                doc = await self.bot.reddit_collection.find_one(filter_dict)
+                if doc:
+                    await channel.send(f"**Already subscribed to r/{subreddit}**")
+                else:
+                    await self.bot.reddit_collection.insert_one(doc_dict)
+                    await channel.send(
+                        f"**Subscribed to r/{subreddit} 'new' listings**"
+                    )
 
     @subreddit.command(name="rm")
     @commands.is_owner()
@@ -131,21 +143,22 @@ class RedditCommands(commands.Cog):
         else:
             subreddit_arg = [arg]
 
-        for sa in subreddit_arg:
-            subreddit = sa
-            if sa.startswith("r/"):
-                subreddit = sa[2:]
-            filter_dict = {"channel_id": channel_id, "subreddit": subreddit}
-            result = await self.bot.reddit_collection.delete_many(filter_dict)
-            if result.deleted_count >= 1:
-                print(f"Removed r/{subreddit} from channel: {channel_id}")
-                await channel.send(
-                    f"**Removed subscription to r/{subreddit} 'new' listings**"
-                )
-            else:
-                await channel.send(
-                    f"**Already not subscribed to r/{subreddit} 'new' listings**"
-                )
+        async with ctx.typing():
+            for sa in subreddit_arg:
+                subreddit = sa
+                if sa.startswith("r/"):
+                    subreddit = sa[2:]
+                filter_dict = {"channel_id": channel_id, "subreddit": subreddit}
+                result = await self.bot.reddit_collection.delete_many(filter_dict)
+                if result.deleted_count >= 1:
+                    print(f"Removed r/{subreddit} from channel: {channel_id}")
+                    await channel.send(
+                        f"**Removed subscription to r/{subreddit} 'new' listings**"
+                    )
+                else:
+                    await channel.send(
+                        f"**Already not subscribed to r/{subreddit} 'new' listings**"
+                    )
 
     @subreddit.command(name="prune")
     @commands.is_owner()
@@ -157,13 +170,16 @@ class RedditCommands(commands.Cog):
         """
         channel = ctx.message.channel
         channel_id = channel.id
-        filter_dict = {"channel_id": channel_id, "subreddit": {"$exists": True}}
-        result = await self.bot.reddit_collection.delete_many(filter_dict)
-        if result.deleted_count >= 1:
-            print(f"Removed all subreddits from channel: {channel_id}")
-            await channel.send(f"**Removed subreddit channel subscription**")
-        else:
-            await channel.send(f"**Already removed subreddit channel subscriptions**")
+        async with ctx.typing():
+            filter_dict = {"channel_id": channel_id, "subreddit": {"$exists": True}}
+            result = await self.bot.reddit_collection.delete_many(filter_dict)
+            if result.deleted_count >= 1:
+                print(f"Removed all subreddits from channel: {channel_id}")
+                await channel.send(f"**Removed subreddit channel subscription**")
+            else:
+                await channel.send(
+                    f"**Already removed subreddit channel subscriptions**"
+                )
 
 
 class RSSFeedCommands(commands.Cog):
