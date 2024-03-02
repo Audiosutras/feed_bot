@@ -1,7 +1,7 @@
 import discord
 import feedparser
 from aiohttp.web import HTTPException
-from .common import CommonUtilities
+from .common import CommonUtilities, IMAGE_MIME_TYPES
 from typing import Literal
 
 
@@ -123,12 +123,15 @@ class RSSFeed(CommonUtilities):
         link: str = entry.get("link", "")
         published: str = entry.get("published", "")
         content: str = entry.get("content", "")
-        imageurl: str = entry.get("imageurl", "")
+        entry_image: str = entry.get("imageurl", "")
         description: str = summary or content
-        # expecting for imageurl to not be a rss/atom feed standard enclosure
-        # The element for the article image for feeds could different.
-        # See description above for what entry_image is planned to do.
-        entry_image: str = imageurl
+
+        links: list = entry.get("links", [])
+        if not entry_image:
+            for l in links:
+                if l.get("type") in IMAGE_MIME_TYPES:
+                    entry_image = l.get("href", "")
+                    break
 
         return [
             feed_url,

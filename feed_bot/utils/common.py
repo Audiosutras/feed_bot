@@ -2,6 +2,17 @@ import os
 from aiohttp import ClientSession
 
 
+IMAGE_MIME_TYPES = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/svg+xml",
+    "image/gif",
+    "image/apng",
+    "image/avif",
+]
+
+
 class CommonUtilities:
     """CommonUtilities for managing class state and aiohttp sessions"""
 
