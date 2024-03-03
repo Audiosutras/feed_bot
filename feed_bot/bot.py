@@ -141,7 +141,7 @@ class FeedBot(commands.Bot):
             r = Reddit(self.http_session, subreddits, channel_id)
             await r.get_subreddit_submissions()
             if r.error:
-                await self.channel_send(channel_id, r.error_msg)
+                await self.channel_send(channel_id=channel_id, content=r.error_msg)
             else:
                 await self.reddit_find_one_or_insert_one_documents(r.res_dicts)
 
@@ -153,7 +153,7 @@ class FeedBot(commands.Bot):
             r = Reddit()
             channel_embeds = r.documents_to_embeds(documents=unsent_documents)
             for channel_id, embed, doc_id in channel_embeds:
-                await self.channel_send(channel_id, embeds=[embed])
+                await self.channel_send(channel_id=channel_id, embeds=[embed])
                 await self.reddit_collection.update_one(
                     filter={"_id": doc_id}, update={"$set": {"sent": True}}
                 )
@@ -213,7 +213,9 @@ class FeedBot(commands.Bot):
                     channel_ids: list = doc.get("channel_ids")
                     for channel_id in channel_ids:
                         await self.channel_send(
-                            channel_id, f"**Feed Updates**", embeds=embeds
+                            channel_id=channel_id,
+                            content=f"**Feed Updates**",
+                            embeds=embeds,
                         )
 
     async def find_one_rss_entry_or_insert(
