@@ -61,7 +61,7 @@ See [asyncpraw documentation](https://asyncpraw.readthedocs.io/en/latest/getting
 
 **For Images:**
 
-`IMAGES_URL` specifies a url to a cloudfront distribution or s3 url where your images are stored and can be fetched. The `IMAGES_URL` constant is accessed via the `CommonUtilities` class. `Images_Url` returns an empty string if not set.
+`IMAGES_URL` specifies a url to a cloudfront distribution or s3 url where your images are stored and can be fetched. The `IMAGES_URL` constant is accessed via the `CommonUtilities` class. `IMAGES_URL` returns an empty string if not set.
 
 **For Managing Environment Variables"**
 
