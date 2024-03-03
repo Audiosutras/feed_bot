@@ -4,7 +4,7 @@ import pdb
 from aiohttp import ClientSession
 import asyncpraw
 from asyncpraw.exceptions import RedditAPIException, ClientException
-from asyncprawcore import AsyncPrawcoreException
+from asyncprawcore import AsyncPrawcoreException, RequestException
 
 from .common import CommonUtilities
 
@@ -36,7 +36,12 @@ class Reddit(CommonUtilities):
         self.clear()
         try:
             subreddits = await self.reddit.subreddit(self.subreddits_query)
-        except (RedditAPIException, ClientException, AsyncPrawcoreException) as e:
+        except (
+            RedditAPIException,
+            ClientException,
+            AsyncPrawcoreException,
+            RequestException,
+        ) as e:
             self.error = True
             self.error_msg = f"{e}"
         else:
@@ -49,6 +54,7 @@ class Reddit(CommonUtilities):
                         title=submission.title,
                         description=submission.selftext,
                         link=submission.permalink,
+                        image=submission.thumbnail,
                         sent=False,
                     )
                     self.res_dicts.append(submission_dict)
@@ -62,6 +68,7 @@ class Reddit(CommonUtilities):
             subreddit = doc.get("subreddit")
             description = doc.get("description", "")
             channel_id = doc.get("channel_id")
+            image = doc.get("image")
             object_id = doc.get("_id")
 
             if len(title) > 256:
@@ -76,8 +83,12 @@ class Reddit(CommonUtilities):
                 description=f"**[{subreddit}]:** {description}",
                 color=discord.Colour.red(),
             )
+            if "https://" in image:
+                # here this a submission's thumbnail image
+                # see get_subreddit_submissions for info
+                embed.set_image(url=image)
             if self.IMAGES_URL:
-                image = f"{self.IMAGES_URL}/reddit-logo.png"
-                embed.set_thumbnail(url=image)
+                thumbnail = f"{self.IMAGES_URL}/reddit-logo.png"
+                embed.set_thumbnail(url=thumbnail)
             channel_embeds.append((channel_id, embed, object_id))
         return channel_embeds
