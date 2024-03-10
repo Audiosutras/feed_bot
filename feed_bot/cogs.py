@@ -5,6 +5,7 @@ Commands initialized in setup_hook for FeedBot in bot.py
 Cogs Documentation:
 https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
+
 import discord
 from discord.ext import commands
 from .utils.reddit import Reddit
@@ -273,7 +274,7 @@ class RSSFeedCommands(commands.Cog):
             feed_urls = arg.split(",")
         else:
             feed_urls = [arg]
-        await channel.send(f"**Getting feeds...**")
+        await channel.send("**Getting feeds...**")
         async with ctx.typing():
             db_found_embeds = []
             to_insert = []
