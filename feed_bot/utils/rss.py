@@ -2,7 +2,7 @@ import discord
 import feedparser
 from aiohttp.web import HTTPException
 from .common import CommonUtilities, IMAGE_MIME_TYPES
-from typing import Literal
+from typing import Literal, List
 
 
 class RSSFeed(CommonUtilities):
@@ -16,10 +16,8 @@ class RSSFeed(CommonUtilities):
 
     async def parse_feed_urls(
         self,
-        feed_urls: [str],
+        feed_urls: List[str],
         feed_key: Literal["feed", "entries", None] = None,
-        *args,
-        **kwargs,
     ) -> None:
         """Iterates of feed_urls performing GET requests
 
@@ -31,7 +29,7 @@ class RSSFeed(CommonUtilities):
             If this error is shown we recommend not adding the url to your channel feeds
 
         Args:
-            feed_urls (str]): A list of feed urls
+            feed_urls ]): A list of feed urls
             feed_key (Literal["feed", "entry", None], optional):
                 - Determines the dictionary in the response that will be returned.
                 - Defaults to None.
@@ -70,7 +68,7 @@ class RSSFeed(CommonUtilities):
                     self.res_dicts.append(data)
 
     @staticmethod
-    def parse_feed_flat(feed: dict) -> [str | dict]:
+    def parse_feed_flat(feed: dict) -> List[str | dict]:
         """Receives a feed dictionary and converts it to a list
 
         Args:
@@ -106,7 +104,7 @@ class RSSFeed(CommonUtilities):
         ]
 
     @staticmethod
-    def parse_entry_flat(entry: dict) -> [str | dict]:
+    def parse_entry_flat(entry: dict) -> List[str | dict]:
         """Receives an entry dictionary and converts it to a list
 
         Args:

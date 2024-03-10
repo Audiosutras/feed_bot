@@ -1,10 +1,11 @@
 import discord
+from typing import List
 import os
-import pdb
 from aiohttp import ClientSession
 import asyncpraw
 from asyncpraw.exceptions import RedditAPIException, ClientException
-from asyncprawcore import AsyncPrawcoreException, RequestException
+from asyncprawcore import AsyncPrawcoreException
+from asyncprawcore.exceptions import RequestException
 
 from .common import CommonUtilities
 
@@ -17,9 +18,9 @@ class Reddit(CommonUtilities):
 
     def __init__(
         self,
-        session: ClientSession = None,
-        subreddit_names: [str] = "",
-        channel_id: str = "",
+        session: ClientSession | None = None,
+        subreddit_names: List[str] = [],
+        channel_id: int | str = "",
     ) -> None:
         super().__init__(session=session, channel_id=channel_id)
         self.subreddits_query = "+".join(subreddit_names)
@@ -32,7 +33,7 @@ class Reddit(CommonUtilities):
             username=os.getenv("REDDIT_USERNAME"),
         )
 
-    async def get_subreddit_submissions(self, *args, **kwargs) -> None:
+    async def get_subreddit_submissions(self) -> None:
         self.clear()
         try:
             subreddits = await self.reddit.subreddit(self.subreddits_query)
@@ -45,26 +46,30 @@ class Reddit(CommonUtilities):
             self.error = True
             self.error_msg = f"{e}"
         else:
-            async for submission in subreddits.new():
-                # Only selfpost (user content) should be shown
-                if getattr(submission, "permalink"):
-                    submission_dict = dict(
-                        channel_id=self.channel_id,
-                        subreddit=submission.subreddit_name_prefixed,
-                        title=submission.title,
-                        description=submission.selftext,
-                        link=submission.permalink,
-                        image=submission.thumbnail,
-                        sent=False,
-                    )
-                    self.res_dicts.append(submission_dict)
+            try:
+                async for submission in subreddits.new():
+                    # Only selfpost (user content) should be shown
+                    if getattr(submission, "permalink"):
+                        submission_dict = dict(
+                            channel_id=self.channel_id,
+                            subreddit=submission.subreddit_name_prefixed,
+                            title=submission.title,
+                            description=submission.selftext,
+                            link=submission.permalink,
+                            image=submission.thumbnail,
+                            sent=False,
+                        )
+                        self.res_dicts.append(submission_dict)
+            except RequestException as e:
+                self.error = True
+                self.error_msg = f"{e}"
 
-    def documents_to_embeds(self, documents: [dict], *args, **kwargs):
+    def documents_to_embeds(self, documents: List[dict], *args, **kwargs):
         """Static method for converting noSql Documents to Discord Embeds"""
         channel_embeds = []
         for doc in documents:
             title = doc.get("title", "")
-            link = doc.get("link")
+            link = doc.get("link", "")
             subreddit = doc.get("subreddit")
             description = doc.get("description", "")
             channel_id = doc.get("channel_id")

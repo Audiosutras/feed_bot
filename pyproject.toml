@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "feed_bot"
-version = "0.2.4"
+version = "0.2.5"
 description = "A discord bot for posting rss feeds and read-only json apis from websites"
 authors = ["Christopher Dixon <chrisdixononcode@gmail.com>"]
 readme = "README.md"

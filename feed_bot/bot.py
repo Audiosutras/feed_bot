@@ -12,9 +12,11 @@ Documentation:
 - Message Content Intent
             - Read More: https://discord.com/developers/docs/topics/gateway#message-content-intent
 """
+
 import os
 import time
 import asyncio
+from asyncprawcore import session
 import discord
 import aiohttp
 from datetime import datetime
@@ -138,7 +140,11 @@ class FeedBot(commands.Bot):
             channel_id = doc.get("_id")
             subreddits = doc.get("subreddits")
             print(f"Channel ID: {channel_id}, Subreddits: {subreddits}")
-            r = Reddit(self.http_session, subreddits, channel_id)
+            r = Reddit(
+                session=self.http_session,
+                subreddit_names=subreddits,
+                channel_id=channel_id,
+            )
             await r.get_subreddit_submissions()
             if r.error:
                 await self.channel_send(channel_id=channel_id, content=r.error_msg)
