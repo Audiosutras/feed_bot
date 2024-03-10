@@ -62,10 +62,12 @@ class Reddit(CommonUtilities):
                         self.res_dicts.append(submission_dict)
             except RequestException as e:
                 self.error = True
-                self.error_msg = f"{e}"
+                self.error_msg = (
+                    f"**500 Error Retrieving Subreddit(s) New Listings: {e}**"
+                )
 
-    def documents_to_embeds(self, documents: List[dict], *args, **kwargs):
-        """Static method for converting noSql Documents to Discord Embeds"""
+    def documents_to_embeds(self, documents: List[dict]):
+        """A method for converting noSql Documents to Discord Embeds"""
         channel_embeds = []
         for doc in documents:
             title = doc.get("title", "")
@@ -73,7 +75,7 @@ class Reddit(CommonUtilities):
             subreddit = doc.get("subreddit")
             description = doc.get("description", "")
             channel_id = doc.get("channel_id")
-            image = doc.get("image")
+            image = doc.get("image", "")
             object_id = doc.get("_id")
 
             if len(title) > 256:
