@@ -9,7 +9,7 @@ https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 from discord.ext import commands
 
 from feed_bot.utils.reddit import Reddit
-from .utils.rss import RSSFeed
+from feed_bot.utils.rss import RSSFeed
 
 
 class RedditCommands(commands.Cog):
@@ -121,8 +121,6 @@ class RedditCommands(commands.Cog):
                     exists, msg = await r.check_subreddit_exists(
                         subreddit_name=subreddit
                     )
-                    print(exists)
-                    print(msg)
                     if exists:
                         await self.bot.reddit_collection.insert_one(doc_dict)
                         await channel.send(

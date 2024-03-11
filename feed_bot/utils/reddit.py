@@ -1,4 +1,3 @@
-from asyncpraw.models.listing.mixins import subreddit
 import discord
 from typing import List, Tuple
 import os
@@ -76,7 +75,7 @@ class Reddit(CommonUtilities):
             msg = f"**Please add r/{subreddit_name} later.**"
         except Redirect:
             exists = False
-            msg = f"**r/{subreddit_name} does not exists.**"
+            msg = f"**r/{subreddit_name} does not exist. Check your spelling.**"
         return (exists, msg)
 
     def documents_to_embeds(self, documents: List[dict]):

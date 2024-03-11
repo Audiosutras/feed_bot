@@ -15,8 +15,6 @@ Documentation:
 
 import os
 import time
-import asyncio
-from asyncprawcore import session
 import discord
 import aiohttp
 from datetime import datetime
