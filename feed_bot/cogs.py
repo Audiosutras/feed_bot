@@ -7,6 +7,8 @@ https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
 
 from discord.ext import commands
+
+from feed_bot.utils.reddit import Reddit
 from .utils.rss import RSSFeed
 
 
@@ -115,10 +117,19 @@ class RedditCommands(commands.Cog):
                 if doc:
                     await channel.send(f"**Already subscribed to r/{subreddit}**")
                 else:
-                    await self.bot.reddit_collection.insert_one(doc_dict)
-                    await channel.send(
-                        f"**Subscribed to r/{subreddit} 'new' listings**"
+                    r = Reddit(session=self.bot.http_session, channel_id=channel_id)
+                    exists, msg = await r.check_subreddit_exists(
+                        subreddit_name=subreddit
                     )
+                    print(exists)
+                    print(msg)
+                    if exists:
+                        await self.bot.reddit_collection.insert_one(doc_dict)
+                        await channel.send(
+                            f"**Subscribed to r/{subreddit} 'new' listings**"
+                        )
+                    else:
+                        await channel.send(content=msg)
 
     @subreddit.command(name="rm")
     @commands.is_owner()

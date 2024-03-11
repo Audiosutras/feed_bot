@@ -1,11 +1,11 @@
+from asyncpraw.models.listing.mixins import subreddit
 import discord
-from typing import List
+from typing import List, Tuple
 import os
 from aiohttp import ClientSession
 import asyncpraw
 from asyncpraw.exceptions import RedditAPIException, ClientException
-from asyncprawcore import AsyncPrawcoreException
-from asyncprawcore.exceptions import RequestException
+from asyncprawcore.exceptions import Redirect, RequestException
 
 from .common import CommonUtilities
 
@@ -40,7 +40,6 @@ class Reddit(CommonUtilities):
         except (
             RedditAPIException,
             ClientException,
-            AsyncPrawcoreException,
             RequestException,
         ) as e:
             self.error = True
@@ -63,8 +62,22 @@ class Reddit(CommonUtilities):
             except RequestException as e:
                 self.error = True
                 self.error_msg = (
-                    f"**500 Error Retrieving Subreddit(s) New Listings: {e}**"
+                    f"**500 Error while retrieving subreddit(s) new listings: {e}**"
                 )
+
+    async def check_subreddit_exists(self, subreddit_name: str) -> Tuple[bool, str]:
+        """Calls the asyncpraw api and checks whether a given subreddit_name exists"""
+        exists: bool = True
+        msg: str = f"**r/{subreddit_name} - 200 Ok.**"
+        try:
+            await self.reddit.subreddit(subreddit_name, fetch=True)
+        except RequestException:
+            exists = False
+            msg = f"**Please add r/{subreddit_name} later.**"
+        except Redirect:
+            exists = False
+            msg = f"**r/{subreddit_name} does not exists.**"
+        return (exists, msg)
 
     def documents_to_embeds(self, documents: List[dict]):
         """A method for converting noSql Documents to Discord Embeds"""
