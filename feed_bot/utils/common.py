@@ -21,7 +21,9 @@ class CommonUtilities:
     error_msg = ""
     res_dicts = []
 
-    def __init__(self, session: ClientSession = None, channel_id: str = ""):
+    def __init__(
+        self, session: ClientSession | None = None, channel_id: int | str = ""
+    ):
         self.session = session
         self.channel_id = channel_id
 

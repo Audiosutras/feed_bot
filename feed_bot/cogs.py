@@ -5,10 +5,11 @@ Commands initialized in setup_hook for FeedBot in bot.py
 Cogs Documentation:
 https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
-import discord
+
 from discord.ext import commands
-from .utils.reddit import Reddit
-from .utils.rss import RSSFeed
+
+from feed_bot.utils.reddit import Reddit
+from feed_bot.utils.rss import RSSFeed
 
 
 class RedditCommands(commands.Cog):
@@ -67,7 +68,6 @@ class RedditCommands(commands.Cog):
                 await channel.send("**No Subreddit Subscriptions**")
             else:
                 for doc in documents:  # should be only 1 document
-                    channel_id = doc.get("_id")
                     subreddits = doc.get("subreddits")
                     subreddits_str = ", ".join(subreddits)
                     if subreddits:  # this always should be the case
@@ -117,10 +117,17 @@ class RedditCommands(commands.Cog):
                 if doc:
                     await channel.send(f"**Already subscribed to r/{subreddit}**")
                 else:
-                    await self.bot.reddit_collection.insert_one(doc_dict)
-                    await channel.send(
-                        f"**Subscribed to r/{subreddit} 'new' listings**"
+                    r = Reddit(session=self.bot.http_session, channel_id=channel_id)
+                    exists, msg = await r.check_subreddit_exists(
+                        subreddit_name=subreddit
                     )
+                    if exists:
+                        await self.bot.reddit_collection.insert_one(doc_dict)
+                        await channel.send(
+                            f"**Subscribed to r/{subreddit} 'new' listings**"
+                        )
+                    else:
+                        await channel.send(content=msg)
 
     @subreddit.command(name="rm")
     @commands.is_owner()
@@ -175,10 +182,10 @@ class RedditCommands(commands.Cog):
             result = await self.bot.reddit_collection.delete_many(filter_dict)
             if result.deleted_count >= 1:
                 print(f"Removed all subreddits from channel: {channel_id}")
-                await channel.send(f"**Removed subreddit channel subscription**")
+                await channel.send("**Removed subreddit channel subscription**")
             else:
                 await channel.send(
-                    f"**Already removed subreddit channel subscriptions**"
+                    "**Already removed subreddit channel subscriptions**"
                 )
 
 
@@ -273,7 +280,7 @@ class RSSFeedCommands(commands.Cog):
             feed_urls = arg.split(",")
         else:
             feed_urls = [arg]
-        await channel.send(f"**Getting feeds...**")
+        await channel.send("**Getting feeds...**")
         async with ctx.typing():
             db_found_embeds = []
             to_insert = []
@@ -295,7 +302,7 @@ class RSSFeedCommands(commands.Cog):
 
             if db_found_embeds:
                 await channel.send(
-                    f"**Channel Already Subscribed to RSS Feeds:**",
+                    "**Channel Already Subscribed to RSS Feeds:**",
                     embeds=db_found_embeds,
                 )
 
@@ -340,7 +347,7 @@ class RSSFeedCommands(commands.Cog):
                     db_insert_embeds.append(embed)
 
                 await channel.send(
-                    f"**New RSS Feed Subscriptions:**", embeds=db_insert_embeds
+                    "**New RSS Feed Subscriptions:**", embeds=db_insert_embeds
                 )
 
     @rss.command(name="rm")

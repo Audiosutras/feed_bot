@@ -1,10 +1,10 @@
 import discord
+from typing import List, Tuple
 import os
-import pdb
 from aiohttp import ClientSession
 import asyncpraw
 from asyncpraw.exceptions import RedditAPIException, ClientException
-from asyncprawcore import AsyncPrawcoreException, RequestException
+from asyncprawcore.exceptions import Redirect, RequestException
 
 from .common import CommonUtilities
 
@@ -17,9 +17,9 @@ class Reddit(CommonUtilities):
 
     def __init__(
         self,
-        session: ClientSession = None,
-        subreddit_names: [str] = "",
-        channel_id: str = "",
+        session: ClientSession | None = None,
+        subreddit_names: List[str] = [],
+        channel_id: int | str = "",
     ) -> None:
         super().__init__(session=session, channel_id=channel_id)
         self.subreddits_query = "+".join(subreddit_names)
@@ -32,43 +32,62 @@ class Reddit(CommonUtilities):
             username=os.getenv("REDDIT_USERNAME"),
         )
 
-    async def get_subreddit_submissions(self, *args, **kwargs) -> None:
+    async def get_subreddit_submissions(self) -> None:
         self.clear()
         try:
             subreddits = await self.reddit.subreddit(self.subreddits_query)
         except (
             RedditAPIException,
             ClientException,
-            AsyncPrawcoreException,
             RequestException,
         ) as e:
             self.error = True
             self.error_msg = f"{e}"
         else:
-            async for submission in subreddits.new():
-                # Only selfpost (user content) should be shown
-                if getattr(submission, "permalink"):
-                    submission_dict = dict(
-                        channel_id=self.channel_id,
-                        subreddit=submission.subreddit_name_prefixed,
-                        title=submission.title,
-                        description=submission.selftext,
-                        link=submission.permalink,
-                        image=submission.thumbnail,
-                        sent=False,
-                    )
-                    self.res_dicts.append(submission_dict)
+            try:
+                async for submission in subreddits.new():
+                    # Only selfpost (user content) should be shown
+                    if getattr(submission, "permalink"):
+                        submission_dict = dict(
+                            channel_id=self.channel_id,
+                            subreddit=submission.subreddit_name_prefixed,
+                            title=submission.title,
+                            description=submission.selftext,
+                            link=submission.permalink,
+                            image=submission.thumbnail,
+                            sent=False,
+                        )
+                        self.res_dicts.append(submission_dict)
+            except RequestException as e:
+                self.error = True
+                self.error_msg = (
+                    f"**500 Error while retrieving subreddit(s) new listings: {e}**"
+                )
 
-    def documents_to_embeds(self, documents: [dict], *args, **kwargs):
-        """Static method for converting noSql Documents to Discord Embeds"""
+    async def check_subreddit_exists(self, subreddit_name: str) -> Tuple[bool, str]:
+        """Calls the asyncpraw api and checks whether a given subreddit_name exists"""
+        exists: bool = True
+        msg: str = f"**r/{subreddit_name} - 200 Ok.**"
+        try:
+            await self.reddit.subreddit(subreddit_name, fetch=True)
+        except RequestException:
+            exists = False
+            msg = f"**Please add r/{subreddit_name} later.**"
+        except Redirect:
+            exists = False
+            msg = f"**r/{subreddit_name} does not exist. Check your spelling.**"
+        return (exists, msg)
+
+    def documents_to_embeds(self, documents: List[dict]):
+        """A method for converting noSql Documents to Discord Embeds"""
         channel_embeds = []
         for doc in documents:
             title = doc.get("title", "")
-            link = doc.get("link")
+            link = doc.get("link", "")
             subreddit = doc.get("subreddit")
             description = doc.get("description", "")
             channel_id = doc.get("channel_id")
-            image = doc.get("image")
+            image = doc.get("image", "")
             object_id = doc.get("_id")
 
             if len(title) > 256:
