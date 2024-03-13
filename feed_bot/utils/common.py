@@ -3,7 +3,7 @@ from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 from markdownify import MarkdownConverter
 
-REDDIT_URL_PATTERN = "https://(www\.)reddit\.com/r/[a-zA-Z0-9./]+(/)?"
+REDDIT_URL_PATTERN = r"https://(www\.)reddit\.com/r/[a-zA-Z0-9./]+/?"
 
 IMAGE_MIME_TYPES = [
     "image/jpeg",
