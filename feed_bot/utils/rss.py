@@ -1,7 +1,8 @@
 import discord
 import feedparser
+from bs4 import BeautifulSoup
 from aiohttp.web import HTTPException
-from .common import CommonUtilities, IMAGE_MIME_TYPES
+from .common import CommonUtilities, IMAGE_MIME_TYPES, md
 from typing import Literal, List
 
 
@@ -87,9 +88,9 @@ class RSSFeed(CommonUtilities):
         description: str = summary or subtitle
 
         feed_url = feed.get("feed_url", "")
-        for l in feed.get("links", []):
-            if l.get("type") == "application/rss+xml":
-                feed_url = l.get("href")
+        for feed_link in feed.get("links", []):
+            if feed_link.get("type") == "application/rss+xml":
+                feed_url = feed_link.get("href")
                 break
 
         return [
@@ -126,10 +127,16 @@ class RSSFeed(CommonUtilities):
 
         links: list = entry.get("links", [])
         if not entry_image:
-            for l in links:
-                if l.get("type") in IMAGE_MIME_TYPES:
-                    entry_image = l.get("href", "")
+            for entry_link in links:
+                if entry_link.get("type") in IMAGE_MIME_TYPES:
+                    entry_image = entry_link.get("href", "")
                     break
+
+        # Check description for html elements
+        # If found convert to markdown
+        soup = BeautifulSoup(description)
+        if soup.find_all("p") or soup.find_all("a"):
+            description = md(soup)
 
         return [
             feed_url,

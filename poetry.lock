@@ -832,6 +832,21 @@ files = [
 ]
 
 [[package]]
+name = "markdownify"
+version = "0.11.6"
+description = "Convert HTML to markdown."
+optional = false
+python-versions = "*"
+files = [
+    {file = "markdownify-0.11.6-py3-none-any.whl", hash = "sha256:ba35fe289d5e9073bcd7d2cad629278fe25f1a93741fcdc0bfb4f009076d8324"},
+    {file = "markdownify-0.11.6.tar.gz", hash = "sha256:009b240e0c9f4c8eaf1d085625dcd4011e12f0f8cec55dedf9ea6f7655e49bfe"},
+]
+
+[package.dependencies]
+beautifulsoup4 = ">=4.9,<5"
+six = ">=1.15,<2"
+
+[[package]]
 name = "motor"
 version = "3.3.2"
 description = "Non-blocking MongoDB driver for Tornado or asyncio"
@@ -1406,6 +1421,17 @@ files = [
 ]
 
 [[package]]
+name = "six"
+version = "1.16.0"
+description = "Python 2 and 3 compatibility utilities"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+files = [
+    {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
+    {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
+]
+
+[[package]]
 name = "soupsieve"
 version = "2.5"
 description = "A modern CSS selector implementation for Beautiful Soup."
@@ -1589,4 +1615,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "cb1bb7e3d193b9ca90ba85bc74b9d6f4e41e2fd2b766ba3558df40f9c9e314ee"
+content-hash = "239317ca28eb4b66c625b172780a2bc30d6ddfe1bbc67e92efb6acb99462961c"
