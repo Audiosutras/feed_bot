@@ -6,12 +6,12 @@ A discord bot for emulating an rss feed reader within your guild channels.
 
 ### Table of Contents
 
-- #### [Commands](#commands)
-- #### [Environment Variables](#environment-variables)
-- #### [Development](#development)
-- #### [Deployment](#deployment)
-- #### [Production](#production)
-- #### [Support The Project](#support-the-project)
+- [Commands](#commands)
+- [Environment Variables](#environment-variables)
+- [Development](#development)
+- [Deployment](#deployment)
+- [Production](#production)
+- [Support The Project](#support-the-project)
 
 ### Commands
 
