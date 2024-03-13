@@ -6,8 +6,10 @@ Cogs Documentation:
 https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
 
+import re
 from discord.ext import commands
 
+from feed_bot.utils.common import REDDIT_URL_PATTERN
 from feed_bot.utils.reddit import Reddit
 from feed_bot.utils.rss import RSSFeed
 
@@ -90,21 +92,36 @@ class RedditCommands(commands.Cog):
             ctx (commands.Context): Invocation Context Object
             arg (str):
                 - the subreddit or comma separated list of subreddits to add.
-                - r/<subreddit> or <subreddit> is acceptable
+                - https://www.reddit.com/r/<subreddit>/, r/<subreddit> or <subreddit> is acceptable
         """
-        channel = ctx.message.channel
-        channel_id = channel.id
-        subreddit_arg = arg
-        if "," in arg:
-            subreddit_arg = arg.split(",")
-        else:
-            subreddit_arg = [arg]
-
         async with ctx.typing():
-            for sa in subreddit_arg:
-                subreddit = sa
-                if sa.startswith("r/"):
-                    subreddit = sa[2:]
+            channel = ctx.message.channel
+            channel_id = channel.id
+            subreddit_arg = arg
+            # Parse comma seperated list if given
+            if "," in arg:
+                subreddit_arg = arg.split(",")
+            else:
+                subreddit_arg = [arg]
+
+            for subreddit in subreddit_arg:
+                # Validation
+                if subreddit.startswith(("https://", "http://")):
+                    if re.fullmatch(REDDIT_URL_PATTERN, subreddit):
+                        subreddit = subreddit.split("m/")[
+                            1
+                        ]  # split at the end of '.com/'
+                        if subreddit.endswith("/"):
+                            subreddit = subreddit[:-1]
+                    else:
+                        await channel.send(
+                            f"**Not a valid reddit url for subreddit: {subreddit}**"
+                        )
+                        break
+                if subreddit.startswith("r/"):
+                    subreddit = subreddit[2:]
+
+                # Find or Insert logic
                 doc_dict = {"channel_id": channel_id, "subreddit": subreddit}
                 filter_dict = {
                     **doc_dict,
@@ -276,6 +293,7 @@ class RSSFeedCommands(commands.Cog):
         """
         channel = ctx.message.channel
         feed_urls: list = []
+        # Parse comma seperated list if given
         if "," in arg:
             feed_urls = arg.split(",")
         else:
