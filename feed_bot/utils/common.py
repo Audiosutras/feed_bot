@@ -2,6 +2,8 @@ import os
 from aiohttp import ClientSession
 
 
+REDDIT_URL_PATTERN = "https://(www\.)reddit\.com/r/[a-zA-Z0-9./]+(/)?"
+
 IMAGE_MIME_TYPES = [
     "image/jpeg",
     "image/png",
