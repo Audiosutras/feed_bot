@@ -134,7 +134,7 @@ class RSSFeed(CommonUtilities):
 
         # Check description for html elements
         # If found convert to markdown
-        soup = BeautifulSoup(description)
+        soup = BeautifulSoup(description, "lxml")
         if soup.find_all("p") or soup.find_all("a"):
             description = md(soup)
 
