@@ -124,8 +124,10 @@ class RSSFeed(CommonUtilities):
         content: str = entry.get("content", "")
         entry_image: str = entry.get("imageurl", "")
         description: str = summary or content
-
         links: list = entry.get("links", [])
+
+        # If entry_image is not set
+        # lets check the links dictionary for an image
         if not entry_image:
             for entry_link in links:
                 if entry_link.get("type") in IMAGE_MIME_TYPES:
@@ -136,6 +138,9 @@ class RSSFeed(CommonUtilities):
         # If found convert to markdown
         soup = BeautifulSoup(description, "lxml")
         if soup.find_all("p"):  # html found
+            # If entry_image still has not been set then lets check
+            # these html elements for images that we can use for an
+            # entry image
             if not entry_image and (img_list := soup.find_all("img")):
                 e_image: str = ""
                 for img in img_list:
@@ -143,14 +148,14 @@ class RSSFeed(CommonUtilities):
                         e_image = img["src"]  # set image to entry_image
                     img.extract()  # remove image from soup
                 entry_image = e_image
+            # Replace headers with p tags
             if headers := soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
-                # replace headers with p tags
                 for header in headers:
                     p_tag = soup.new_tag("p")
                     p_tag.string = header.text
                     header.replace_with(p_tag)
+            # Replace blockquotes with bold tags
             if blockquotes := soup.find_all("blockquote"):
-                # replace blockquotes with bold tags
                 for blockquote in blockquotes:
                     bold_tag = soup.new_tag("b")
                     bold_tag.string = blockquote.text
