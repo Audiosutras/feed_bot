@@ -135,7 +135,23 @@ class RSSFeed(CommonUtilities):
         # Check description for html elements
         # If found convert to markdown
         soup = BeautifulSoup(description, "lxml")
-        if soup.find_all("p") or soup.find_all("a"):
+        if soup.find_all("p"):  # html found
+            if not entry_image and (img_list := soup.find_all("img", limit=1)):
+                for img in img_list:
+                    entry_image = img.src  # set image to entry_image
+                    img.extract()  # remove image from soup
+            if headers := soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
+                # replace headers with p tags
+                for header in headers:
+                    p_tag = soup.new_tag("p")
+                    p_tag.string = header.text
+                    header.replace_with(p_tag)
+            if blockquotes := soup.find_all("blockquote"):
+                # replace blockquotes with bold tags
+                for blockquote in blockquotes:
+                    bold_tag = soup.new_tag("b")
+                    bold_tag.string = blockquote.string
+                    blockquote.replace_with(bold_tag)
             description = md(soup)
 
         return [
