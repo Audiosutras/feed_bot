@@ -150,7 +150,7 @@ class RSSFeed(CommonUtilities):
                 # replace blockquotes with bold tags
                 for blockquote in blockquotes:
                     bold_tag = soup.new_tag("b")
-                    bold_tag.string = blockquote.string
+                    bold_tag.string = blockquote.text
                     blockquote.replace_with(bold_tag)
             description = md(soup)
 
