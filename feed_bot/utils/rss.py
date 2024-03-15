@@ -1,7 +1,8 @@
 import discord
 import feedparser
+from bs4 import BeautifulSoup
 from aiohttp.web import HTTPException
-from .common import CommonUtilities, IMAGE_MIME_TYPES
+from .common import CommonUtilities, IMAGE_MIME_TYPES, md
 from typing import Literal, List
 
 
@@ -87,9 +88,9 @@ class RSSFeed(CommonUtilities):
         description: str = summary or subtitle
 
         feed_url = feed.get("feed_url", "")
-        for l in feed.get("links", []):
-            if l.get("type") == "application/rss+xml":
-                feed_url = l.get("href")
+        for feed_link in feed.get("links", []):
+            if feed_link.get("type") == "application/rss+xml":
+                feed_url = feed_link.get("href")
                 break
 
         return [
@@ -123,13 +124,43 @@ class RSSFeed(CommonUtilities):
         content: str = entry.get("content", "")
         entry_image: str = entry.get("imageurl", "")
         description: str = summary or content
-
         links: list = entry.get("links", [])
+
+        # If entry_image is not set
+        # lets check the links dictionary for an image
         if not entry_image:
-            for l in links:
-                if l.get("type") in IMAGE_MIME_TYPES:
-                    entry_image = l.get("href", "")
+            for entry_link in links:
+                if entry_link.get("type") in IMAGE_MIME_TYPES:
+                    entry_image = entry_link.get("href", "")
                     break
+
+        # Check description for html elements
+        # If found convert to markdown
+        soup = BeautifulSoup(description, "lxml")
+        if soup.find_all("p"):  # html found
+            # If entry_image still has not been set then lets check
+            # these html elements for images that we can use for an
+            # entry image
+            if not entry_image and (img_list := soup.find_all("img")):
+                e_image: str = ""
+                for img in img_list:
+                    if img["src"] and img["src"] != "undefined" and not e_image:
+                        e_image = img["src"]  # set image to entry_image
+                    img.extract()  # remove image from soup
+                entry_image = e_image
+            # Replace headers with p tags
+            if headers := soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
+                for header in headers:
+                    p_tag = soup.new_tag("p")
+                    p_tag.string = header.text
+                    header.replace_with(p_tag)
+            # Replace blockquotes with bold tags
+            if blockquotes := soup.find_all("blockquote"):
+                for blockquote in blockquotes:
+                    bold_tag = soup.new_tag("b")
+                    bold_tag.string = blockquote.text
+                    blockquote.replace_with(bold_tag)
+            description = md(soup)
 
         return [
             feed_url,

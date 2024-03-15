@@ -1,8 +1,9 @@
 import os
 from aiohttp import ClientSession
+from bs4 import BeautifulSoup
+from markdownify import MarkdownConverter
 
-
-REDDIT_URL_PATTERN = "https://(www\.)reddit\.com/r/[a-zA-Z0-9./]+(/)?"
+REDDIT_URL_PATTERN = r"https://(www\.)reddit\.com/r/[a-zA-Z0-9./]+/?"
 
 IMAGE_MIME_TYPES = [
     "image/jpeg",
@@ -13,6 +14,11 @@ IMAGE_MIME_TYPES = [
     "image/apng",
     "image/avif",
 ]
+
+
+def md(soup: BeautifulSoup, **options):
+    """Convert BeautifulSoup instance to markdown text"""
+    return MarkdownConverter(**options).convert_soup(soup)
 
 
 class CommonUtilities:
