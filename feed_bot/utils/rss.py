@@ -136,10 +136,13 @@ class RSSFeed(CommonUtilities):
         # If found convert to markdown
         soup = BeautifulSoup(description, "lxml")
         if soup.find_all("p"):  # html found
-            if not entry_image and (img_list := soup.find_all("img", limit=1)):
+            if not entry_image and (img_list := soup.find_all("img")):
+                e_image: str = ""
                 for img in img_list:
-                    entry_image = img["src"]  # set image to entry_image
+                    if img["src"] and img["src"] != "undefined" and not e_image:
+                        e_image = img["src"]  # set image to entry_image
                     img.extract()  # remove image from soup
+                entry_image = e_image
             if headers := soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
                 # replace headers with p tags
                 for header in headers:
