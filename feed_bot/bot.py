@@ -117,7 +117,7 @@ class FeedBot(commands.Bot):
     async def before_subreddit(self):
         await self.wait_until_ready()  # wait until the bot logs in
 
-    async def pull_subreddit(self, *args, **kwargs):
+    async def pull_subreddit(self):
         """Fetches a channel's subreddit new listings and stores them in the database"""
         pipeline = [
             {
@@ -149,7 +149,7 @@ class FeedBot(commands.Bot):
             else:
                 await self.reddit_find_one_or_insert_one_documents(r.res_dicts)
 
-    async def post_subreddit(self, *args, **kwargs):
+    async def post_subreddit(self):
         """Returns new posts for a subreddit"""
         cursor = self.reddit_collection.find({"sent": False})
         unsent_documents = await cursor.to_list(None)
