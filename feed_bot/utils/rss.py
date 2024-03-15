@@ -138,7 +138,7 @@ class RSSFeed(CommonUtilities):
         if soup.find_all("p"):  # html found
             if not entry_image and (img_list := soup.find_all("img", limit=1)):
                 for img in img_list:
-                    entry_image = img.src  # set image to entry_image
+                    entry_image = img["src"]  # set image to entry_image
                     img.extract()  # remove image from soup
             if headers := soup.find_all(["h1", "h2", "h3", "h4", "h5", "h6"]):
                 # replace headers with p tags
