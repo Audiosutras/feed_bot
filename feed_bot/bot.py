@@ -17,15 +17,21 @@ import os
 import time
 import discord
 import aiohttp
+from typing import List, Set
 from datetime import datetime
 from motor import motor_asyncio
 from discord.ext import commands, tasks
+
+from .utils.common import CommonUtilities
 from .utils.reddit import Reddit
 from .utils.rss import RSSFeed
 from .cogs import RedditCommands, RSSFeedCommands
 
 
-LOOP_CYCLE = {"minutes": 60} if os.getenv("PROD_ENV", False) else {"minutes": 1}
+LOOP_CYCLE = {"minutes": 60.0} if os.getenv("PROD_ENV", False) else {"minutes": 1.0}
+CALL_FOR_SUPPORT_LOOP_CYCLE = (
+    {"hours": 12.0} if os.getenv("PROD_ENV", False) else {"minutes": 3.0}
+)
 
 
 class FeedBot(commands.Bot):
@@ -65,12 +71,47 @@ class FeedBot(commands.Bot):
         print(f"Task Loop Interval: {LOOP_CYCLE}")
         self.subreddit_task.start()
         self.rss_feeds_task.start()
+        self.post_call_for_support.start()
         await self.add_cog(RedditCommands(self))
         await self.add_cog(RSSFeedCommands(self))
 
     async def on_ready(self):
         print(f"Logged in as {self.user} (ID: {self.user.id})")
         print("------")
+
+    @tasks.loop(**CALL_FOR_SUPPORT_LOOP_CYCLE)
+    async def post_call_for_support(self):
+        """A scheduled task to notify users of where the source code for the project can be found."""
+        rss_channel_ids: List = await self.rss_collection.distinct("channel_id")
+        subreddit_channel_ids: List = await self.reddit_collection.distinct(
+            "channel_id"
+        )
+        channel_ids: Set = set(rss_channel_ids).union(set(subreddit_channel_ids))
+        call_for_support_embed: discord.Embed = discord.Embed(
+            title="Support Feed Bot: A Self-Hostable Open Source RSS Feed Reader",
+            url="https://github.com/Audiosutras/feed_bot?tab=readme-ov-file#support-the-project",
+            description=(
+                "This self-hostable bot has been made available for free under the MIT License. "
+                "Check out the [source code](https://github.com/Audiosutras/feed_bot) to "
+                "make feature requests and report issues.\n\n"
+                "**Find this bot of value?** Consider [sending a tip](https://ko-fi.com/chrisdixononcode) "
+                "to the developer behind it."
+            ),
+            color=discord.Colour.purple(),
+        )
+        call_for_support_embed.set_thumbnail(
+            url="https://d2ixboot0418ao.cloudfront.net/feed_bot.jpg"
+        )
+        call_for_support_embed.set_image(
+            url="https://d2ixboot0418ao.cloudfront.net/thankyou.jpg"
+        )
+
+        for channel_id in list(channel_ids):
+            await self.channel_send(channel_id=channel_id, embed=call_for_support_embed)
+
+    @post_call_for_support.before_loop
+    async def before_post_call_for_support(self):
+        await self.wait_until_ready()  # wait until the bot logs in
 
     async def channel_send(self, channel_id, *args, **kwargs):
         channel = self.get_channel(channel_id)
