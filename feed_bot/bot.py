@@ -22,10 +22,9 @@ from datetime import datetime
 from motor import motor_asyncio
 from discord.ext import commands, tasks
 
-from .utils.common import CommonUtilities
 from .utils.reddit import Reddit
 from .utils.rss import RSSFeed
-from .cogs import RedditCommands, RSSFeedCommands
+from .cogs import FileCommands, RedditCommands, RSSFeedCommands
 
 
 LOOP_CYCLE = {"minutes": 60.0} if os.getenv("PROD_ENV", False) else {"minutes": 1.0}
@@ -72,6 +71,7 @@ class FeedBot(commands.Bot):
         self.subreddit_task.start()
         self.rss_feeds_task.start()
         self.post_call_for_support.start()
+        await self.add_cog(FileCommands(self))
         await self.add_cog(RedditCommands(self))
         await self.add_cog(RSSFeedCommands(self))
 

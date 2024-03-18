@@ -7,11 +7,82 @@ https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
 
 import re
+from typing import List
 from discord.ext import commands
 
 from feed_bot.utils.common import REDDIT_URL_PATTERN
 from feed_bot.utils.reddit import Reddit
 from feed_bot.utils.rss import RSSFeed
+
+
+class FileCommands(commands.Cog):
+    """Commands for import/export of channel subscriptions
+
+    Channel members can export a channel's subscriptions, but
+    only the guild owner may import a channel's subscriptions.
+    """
+
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command(name="export")
+    async def export_channel_subs(self, ctx: commands.Context) -> None:
+        """Export a channel's subscriptions
+
+        Generates a .txt file of all the channel's subscriptions
+        """
+        async with ctx.typing():
+            channel = ctx.message.channel
+            pipeline = [
+                {
+                    "$lookup": {
+                        "from": self.bot.reddit_collection_str,
+                        "localField": "channel_id",
+                        "foreignField": "channel_id",
+                        "pipeline": [
+                            {
+                                "$match": {
+                                    "channel_id": {"$exists": True},
+                                    "subreddit": {"$exists": True},
+                                    "title": {"$exists": False},
+                                    "description": {"$exists": False},
+                                    "link": {"$exists": False},
+                                    "sent": {"$exists": False},
+                                }
+                            },
+                        ],
+                        "as": "reddit_docs",
+                    }
+                },
+                {"$unwind": "$reddit_docs"},
+                {
+                    "$project": {
+                        "_id": 1,
+                        "channel_id": 1,
+                        "feed_url": 1,
+                        "subreddit": "$reddit_docs.subreddit",
+                    }
+                },
+                {"$match": {"channel_id": channel.id}},
+                {
+                    "$group": {
+                        "_id": "$channel_id",
+                        "feed_urls": {"$addToSet": "$feed_url"},
+                        "subreddits": {"$addToSet": "$subreddit"},
+                    }
+                },
+            ]
+
+            cursor = self.bot.rss_collection.aggregate(pipeline)
+            documents = await cursor.to_list(None)
+            print(documents)
+            for doc in documents:
+                channel_id = doc.get("_id")
+                feed_urls: List[str] = doc.get("feed_urls", [])
+                subreddits: List[str] = doc.get("subreddits", [])
+                print("channel_id", channel_id)
+                print("feed_urls", feed_urls)
+                print("subreddits", subreddits)
 
 
 class RedditCommands(commands.Cog):
@@ -44,7 +115,7 @@ class RedditCommands(commands.Cog):
             ctx (commands.Context): context object
         """
         channel = ctx.message.channel
-        await channel.send(f"**Getting subreddits...**")
+        await channel.send("**Getting subreddits...**")
         async with ctx.typing():
             pipeline = [
                 {
