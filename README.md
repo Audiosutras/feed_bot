@@ -1,6 +1,7 @@
 # Feed Bot
 
 ![Feed Bot Image](https://d2ixboot0418ao.cloudfront.net/feed_bot.jpg)
+
 A discord bot for emulating an rss feed reader within your guild channels.
 
 ## [Discord Developer Portal](https://discord.com/developers/applications)
