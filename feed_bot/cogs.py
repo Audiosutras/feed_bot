@@ -18,10 +18,9 @@ from feed_bot.utils.rss import RSSFeed
 
 
 class FileCommands(commands.Cog):
-    """Commands for import/export of channel subscriptions
+    """Commands for exporting channel subscriptions
 
-    Channel members can export a channel's subscriptions, but
-    only the guild owner may import a channel's subscriptions.
+    Channel members can export a channel's subscriptions
     """
 
     def __init__(self, bot):
@@ -29,10 +28,7 @@ class FileCommands(commands.Cog):
 
     @commands.command(name="export")
     async def export_channel_subs(self, ctx: commands.Context) -> None:
-        """Export a channel's subscriptions
-
-        Generates a .txt file of all the channel's subscriptions
-        """
+        """Sends a generated .txt file of all the channel's subscriptions to the channel"""
         async with ctx.typing():
             channel = ctx.message.channel
             pipeline = [
