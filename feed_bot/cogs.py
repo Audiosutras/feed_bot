@@ -7,7 +7,9 @@ https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#cogs
 """
 
 import re
-from typing import List
+import tempfile
+from typing import List, Dict
+import discord
 from discord.ext import commands
 
 from feed_bot.utils.common import REDDIT_URL_PATTERN
@@ -74,15 +76,25 @@ class FileCommands(commands.Cog):
             ]
 
             cursor = self.bot.rss_collection.aggregate(pipeline)
-            documents = await cursor.to_list(None)
-            print(documents)
-            for doc in documents:
-                channel_id = doc.get("_id")
-                feed_urls: List[str] = doc.get("feed_urls", [])
-                subreddits: List[str] = doc.get("subreddits", [])
-                print("channel_id", channel_id)
-                print("feed_urls", feed_urls)
-                print("subreddits", subreddits)
+            documents: List = await cursor.to_list(None)
+            doc: Dict = documents[0]
+            feed_urls: List[str] = doc.get("feed_urls", [])
+            subreddits: List[str] = doc.get("subreddits", [])
+
+            to_file_write: Dict = {
+                ".rss add": ",".join(feed_urls),
+                ".subreddit add": ",".join(subreddits),
+            }
+
+            with tempfile.NamedTemporaryFile(
+                mode="w+t", suffix=".txt", delete_on_close=False
+            ) as fp:
+                for key, value in to_file_write.items():
+                    fp.write(f"{key} {value}\n")
+                fp.close()
+
+                file = discord.File(fp.name, filename=f"{channel.name}.txt")
+                await channel.send(file=file)
 
 
 class RedditCommands(commands.Cog):
