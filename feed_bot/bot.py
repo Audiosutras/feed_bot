@@ -29,7 +29,7 @@ from .cogs import FileCommands, RedditCommands, RSSFeedCommands
 
 LOOP_CYCLE = {"minutes": 60.0} if os.getenv("PROD_ENV", False) else {"minutes": 1.0}
 CALL_FOR_SUPPORT_LOOP_CYCLE = (
-    {"hours": 12.0} if os.getenv("PROD_ENV", False) else {"minutes": 30.0}
+    {"hours": 12.0} if os.getenv("PROD_ENV", False) else {"hours": 1.0}
 )
 
 

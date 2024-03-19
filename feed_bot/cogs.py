@@ -77,24 +77,36 @@ class FileCommands(commands.Cog):
 
             cursor = self.bot.rss_collection.aggregate(pipeline)
             documents: List = await cursor.to_list(None)
-            doc: Dict = documents[0]
-            feed_urls: List[str] = doc.get("feed_urls", [])
-            subreddits: List[str] = doc.get("subreddits", [])
+            if documents:
+                doc: Dict = documents[0]
+                feed_urls: List[str] = doc.get("feed_urls", [])
+                subreddits: List[str] = doc.get("subreddits", [])
 
-            to_file_write: Dict = {
-                ".rss add": ",".join(feed_urls),
-                ".subreddit add": ",".join(subreddits),
-            }
+                if feed_urls or subreddits:
+                    to_file_write: Dict = {
+                        ".rss add": ",".join(feed_urls),
+                        ".subreddit add": ",".join(subreddits),
+                    }
 
-            with tempfile.NamedTemporaryFile(
-                mode="w+t", suffix=".txt", delete_on_close=False
-            ) as fp:
-                for key, value in to_file_write.items():
-                    fp.write(f"{key} {value}\n")
-                fp.close()
+                    with tempfile.NamedTemporaryFile(
+                        mode="w+t", suffix=".txt", delete_on_close=False
+                    ) as fp:
+                        for key, value in to_file_write.items():
+                            fp.write(f"{key} {value}\n")
+                        fp.close()
 
-                file = discord.File(fp.name, filename=f"{channel.name}.txt")
-                await channel.send(file=file)
+                        filename = f"{channel.name}.txt"
+                        file = discord.File(fp.name, filename=filename)
+                        await channel.send(
+                            content=f"**Channel Subscriptions Export: {filename}**",
+                            file=file,
+                        )
+                else:
+                    await channel.send(
+                        content="**Channel has no subscriptions to export**"
+                    )
+            else:
+                await channel.send(content="**Channel has no subscriptions to export**")
 
 
 class RedditCommands(commands.Cog):
