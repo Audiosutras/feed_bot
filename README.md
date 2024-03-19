@@ -20,6 +20,8 @@ A discord bot for emulating an rss feed reader within your guild channels.
 
 - Permissions: Channel members can export a channel's subscriptions
 
+![Image of Export Command In Action](/docs/images/export-command-ex.png)
+
 | Command   | Description                                                                   |
 | --------- | ----------------------------------------------------------------------------- |
 | `.export` | Sends a generated .txt file of all the channel's subscriptions to the channel |
