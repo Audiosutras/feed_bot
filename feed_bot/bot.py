@@ -228,7 +228,6 @@ class FeedBot(commands.Bot):
         await rss.parse_feed_urls(feed_urls=feed_urls)
         if rss.error:
             return print(f"An error occurred updating rss feeds: {rss.error_msg}")
-        prep_embeds = []
         for feed, entries in rss.res_dicts:
             parsed_feed = rss.parse_feed_flat(feed)
             feed_url = parsed_feed[0]
@@ -259,7 +258,7 @@ class FeedBot(commands.Bot):
                     for channel_id in channel_ids:
                         await self.channel_send(
                             channel_id=channel_id,
-                            content=f"**Feed Updates**",
+                            content="**Feed Updates**",
                             embeds=embeds,
                         )
 
