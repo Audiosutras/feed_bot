@@ -16,6 +16,14 @@ A discord bot for emulating an rss feed reader within your guild channels.
 
 ### Commands
 
+**File Commands: Commands for exporting channel subscriptions**
+
+- Permissions: Channel members can export a channel's subscriptions
+
+| Command   | Description                                                                   |
+| --------- | ----------------------------------------------------------------------------- |
+| `.export` | Sends a generated .txt file of all the channel's subscriptions to the channel |
+
 **Reddit Commands: RSS like updates for subreddits within channels**
 
 - Permissions: Only a guild owner can invoke these commands.

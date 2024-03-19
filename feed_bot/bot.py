@@ -22,15 +22,14 @@ from datetime import datetime
 from motor import motor_asyncio
 from discord.ext import commands, tasks
 
-from .utils.common import CommonUtilities
 from .utils.reddit import Reddit
 from .utils.rss import RSSFeed
-from .cogs import RedditCommands, RSSFeedCommands
+from .cogs import FileCommands, RedditCommands, RSSFeedCommands
 
 
 LOOP_CYCLE = {"minutes": 60.0} if os.getenv("PROD_ENV", False) else {"minutes": 1.0}
 CALL_FOR_SUPPORT_LOOP_CYCLE = (
-    {"hours": 12.0} if os.getenv("PROD_ENV", False) else {"minutes": 3.0}
+    {"hours": 12.0} if os.getenv("PROD_ENV", False) else {"hours": 1.0}
 )
 
 
@@ -72,6 +71,7 @@ class FeedBot(commands.Bot):
         self.subreddit_task.start()
         self.rss_feeds_task.start()
         self.post_call_for_support.start()
+        await self.add_cog(FileCommands(self))
         await self.add_cog(RedditCommands(self))
         await self.add_cog(RSSFeedCommands(self))
 
@@ -228,7 +228,6 @@ class FeedBot(commands.Bot):
         await rss.parse_feed_urls(feed_urls=feed_urls)
         if rss.error:
             return print(f"An error occurred updating rss feeds: {rss.error_msg}")
-        prep_embeds = []
         for feed, entries in rss.res_dicts:
             parsed_feed = rss.parse_feed_flat(feed)
             feed_url = parsed_feed[0]
@@ -259,7 +258,7 @@ class FeedBot(commands.Bot):
                     for channel_id in channel_ids:
                         await self.channel_send(
                             channel_id=channel_id,
-                            content=f"**Feed Updates**",
+                            content="**Feed Updates**",
                             embeds=embeds,
                         )
 
