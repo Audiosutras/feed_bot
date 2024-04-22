@@ -254,6 +254,7 @@ class FeedBot(commands.Bot):
                     embed = rss.create_entry_embed(entry=entry)
                     embeds.append(embed)
 
+                # Batch the embeds to avoid ValueError thrown by Discord
                 if len(embeds) > 10:
                     embed_batches = chunks(lst=embeds, n=10)
 
