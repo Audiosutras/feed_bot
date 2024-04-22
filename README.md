@@ -128,7 +128,7 @@ To open a shell to the noSQL database run
 $ docker compose exec mongo mongosh mongodb://root:feed_bot@mongo:27017/
 ```
 
-[mongodb cheatsheet](https://dev.to/yaswanthteja/all-mongodb-database-commands-mongodb-cheatsheet-146k)
+[mongodb cheatsheet](https://www.mongodb.com/developer/products/mongodb/cheat-sheet/)
 
 To run test cases run
 
