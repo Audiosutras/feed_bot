@@ -24,6 +24,7 @@ from discord.ext import commands, tasks
 
 from .utils.reddit import Reddit
 from .utils.rss import RSSFeed
+from .utils.common import chunks
 from .cogs import FileCommands, RedditCommands, RSSFeedCommands
 
 
@@ -253,14 +254,25 @@ class FeedBot(commands.Bot):
                     embed = rss.create_entry_embed(entry=entry)
                     embeds.append(embed)
 
-                for doc in documents:
-                    channel_ids: list = doc.get("channel_ids")
-                    for channel_id in channel_ids:
-                        await self.channel_send(
-                            channel_id=channel_id,
-                            content="**Feed Updates**",
-                            embeds=embeds,
-                        )
+                if len(embeds) > 10:
+                    embed_batches = chunks(lst=embeds, n=10)
+
+                    for doc in documents:
+                        channel_ids: list = doc.get("channel_ids")
+                        for channel_id in channel_ids:
+                            for embed_batch in embed_batches:
+                                await self.channel_send(
+                                    channel_id=channel_id,
+                                    embeds=embed_batch,
+                                )
+                else:
+                    for doc in documents:
+                        channel_ids: list = doc.get("channel_ids")
+                        for channel_id in channel_ids:
+                            await self.channel_send(
+                                channel_id=channel_id,
+                                embeds=embeds,
+                            )
 
     async def find_one_rss_entry_or_insert(
         self,
